@@ -1,0 +1,93 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb deployment creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for mariadb
+############################ # ############################
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: mariadb-deploy
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    stage: production
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      stage: production
+      tier: database
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        stage: production
+        tier: database
+    spec:
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:latest
+        ports:
+        - name: db-port
+          containerPort: 3306
+          protocol: TCP
+        env:
+        - name: MARIADB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-cm
+              key: MARIADB_USER
+        - name: MARIADB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-cm
+              key: MARIADB_DATABASE
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: MARIADB_PASSWORD
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: MARIADB_ROOT_PASSWORD
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  revisionHistoryLimit: 10

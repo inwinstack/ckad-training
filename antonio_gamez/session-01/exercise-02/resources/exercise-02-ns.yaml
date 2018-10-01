@@ -1,0 +1,15 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: namespace creation
+# Purpose: creates a namespace for the resources
+############################ # ############################
+#---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: exercise-02

@@ -1,0 +1,33 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb configmap creation
+# Purpose: creates key/value pairs to be used in mariadb
+###
+######################### # ############################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-cm
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: database
+    stage: production
+data:
+  MARIADB_REPLICATION_MODE_MASTER: master
+  MARIADB_REPLICATION_MODE_SLAVE: slave
+
+  MARIADB_USER: k8s_wordpress_user
+  MARIADB_DATABASE: k8s_wordpress
+
+  MARIADB_MASTER_HOST: mariadb-master
+  MARIADB_MASTER_PORT: "3306"
+
+  MARIADB_MASTER_ROOT_USER: root
+  MARIADB_REPLICATION_USER: replication_user

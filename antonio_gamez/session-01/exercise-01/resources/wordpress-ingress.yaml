@@ -1,0 +1,32 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: ingress definition
+# Purpose: creates an ingress rule to access Wordpress
+############################ # ############################
+---
+# apiVersion: extensions/v1beta1
+# kind: Ingress
+# metadata:
+#   name: wordpress-ingress
+#   namespace: exercise-01
+#   labels:
+#     app: wordpress
+#     tier: frontend
+#     stage: production
+#   # non-www to www redirection
+#   annotations:
+#     nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+# spec:
+#   rules:
+#   - host: antgamdiapc.lsi.us.es
+#     http:
+#       paths:
+#       - path: /
+#         backend:
+#           serviceName: wordpress
+#           servicePort: http-sv-port
