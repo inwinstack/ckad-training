@@ -36,7 +36,8 @@ Discussion about some non-trivial aspects (not covered in exercise01) of the sol
 
 > MariaDB should be configured with replication with a master-slave model. There should be 1 master and 2 slaves.
 
-**TBD** **TBD** **TBD**
+Two different deployments have been created, master and slave. The main differences are the set of environment variables and the number of initial replicas.
+Due to a bug in the latest bitnami/mariadb image related to the proper configuration of the env vars, the version has been downgraded to `10.1.21-r2`.
 
 > Every pod should configure the CPU/RAM requested to the cluster, and the limits for them.
 
@@ -67,87 +68,40 @@ It is achieved simply typing `kubectl scale -l "app=wordpress,tier=database,mode
 
 > Document the steps to follow to install HyperDB WP plugin and configure it to balance SQL request between Master&Slaves services.
 
-**TBD** **TBD** **TBD**
+This WP plugin is slightly different since it is not installed from the UI. The plugin, [downloadable here](https://downloads.wordpress.org/plugin/hyperdb.1.5.zip), is composed of two files: the configuration file `db-config.php` and the core file `db.php`.
+The installation steps are as follows:
 
----
+1. Enter the proper configuration in `db-config.php`
+2. Copt `db-config.php` in the directory that holds `wp-config.php`.
+3. Copy `db.php` to the `/wp-content/` directory.
 
-
-
-la cosa esta se instala desde https://downloads.wordpress.org/plugin/hyperdb.1.5.zip
-
-1. Enter a configuration in `db-config.php`.
-
-2. Deploy `db-config.php` in the directory that holds `wp-config.php`. This may be the WordPress root or one level above. It may also be anywhere else the web server can see it; in this case, define `DB_CONFIG_FILE` in `wp-config.php`.
-
-3. Deploy `db.php` to the `/wp-content/` directory. Simply placing this file activates it. To deactivate it, move it from that location or move the config file.
-
-
-
+In this scneario, the important excerpt of the `db-config.php` file are:
+```
+// Add master database for writing (we use PHP variables since thay have previously loaded from the env vars)
 $wpdb->add_database(array(
-    'host'     => DB_HOST, //"mariadb-master"    // If port is other than 3306, use host:port.
+    'host'     => DB_HOST, //"mariadb-master" 
     'user'     => DB_USER,
     'password' => DB_PASSWORD,
     'name'     => DB_NAME,
-    'write'    => 1,
-    'read'     => 0,
+    'write'    => 1, // write: enabled
+    'read'     => 0, // read: disabled
     'dataset'  => 'global',
     'timeout'  => 0.2,
 ));
-
+```
+```
+// Add slave database pool for reading
 $wpdb->add_database(array(
-    'host'     => "mariadb-slave",     // If port is other than 3306, use host:port.
+    'host'     => "mariadb-slave", //the interally exposed name in the kubedns
     'user'     => DB_USER,
     'password' => DB_PASSWORD,
     'name'     => DB_NAME,
-    'write'    => 0,
-    'read'     => 1,
+    'write'    => 0,  // write: disabled
+    'read'     => 1,  // read: enabled
     'dataset'  => 'global',
     'timeout'  => 0.2,
 ));
-
-
-
-Use 'StatefulSet' with a distributed application that requires each node to have a persistent state and the ability to configure an arbitrary number of nodes through a configuration (replicas = 'X'). seria una mejor opcion, pero no usamos todas esas cosas aun en este eeciccio
-
-$wpdb->add_database(array(
-    'host'     => DB_HOST, //"mariadb-master"    // If port is other than 3306, use host:port.
-    'user'     => DB_USER,
-    'password' => DB_PASSWORD,
-    'name'     => DB_NAME,
-    'write'    => 1,
-    'read'     => 0,
-    'dataset'  => 'global',
-    'timeout'  => 0.2,
-));
-
-$wpdb->add_database(array(
-    'host'     => "mariadb-slave",     // If port is other than 3306, use host:port.
-    'user'     => DB_USER,
-    'password' => DB_PASSWORD,
-    'name'     => DB_NAME,
-    'write'    => 0,
-    'read'     => 1,
-    'dataset'  => 'global',
-    'timeout'  => 0.2,
-));
-
-All nodes in a master-master configuration and slave nodes in a master-slave configuration can make use of a StatefulSet along with a Service. Master nodes (like master, master-secondary) may each be a Pod with some persistent volume along with a Service as these nodes have no need to scale up or down. They can as well be a StatefulSet with replicas = 1.
-
-Examples of StatefulSet are: 
-- Datanodes (slaves) in a Hadoop cluster (master-slave) 
-- Database nodes (master-master) in a Cassandra cluster
-
-Each Pod (replica) in a StatefulSet has 
-- A unique and stable network identity 
-- Kubernetes creates one PersistentVolume for each VolumeClaimTemplate 
-https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
-
-'Deployment' on the other hand is suitable for stateless applications/services where the nodes do not require any special identity (a load balancer can reach any node that it chooses) and the number of nodes can be an arbitrary number.
-
-
-
-
----
+```
 
 ## Technical debt
   
@@ -158,4 +112,9 @@ This scenario is *absolutely* not ready for production purposes. Specifically, t
     1.1) Use an **Ingress** controller: we have to install the Ingress addon into the cluster (e.g. nginx or HAProxy) and create the rules to forward the traffic
 
 2) **Configure SSL/TLS to secure the http traffic**. A straightforward way to do that is to generate a Let'sEncrypt free certificate and configure it in either the WordPress or the ingress service.
+
+3) **Add persistence** by configuring NFS/EBS/... storage and creating PVCs.
+
+4) **Consider using StatefulSet** when adding persistence to nodes. This object deals with a distributed application that requires each node to have a persistent state and the ability to configure an arbitrary number of nodes through a configuration
+
 

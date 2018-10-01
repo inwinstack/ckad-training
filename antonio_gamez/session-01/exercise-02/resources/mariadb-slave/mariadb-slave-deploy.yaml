@@ -105,11 +105,6 @@ spec:
               configMapKeyRef:
                 name: mariadb-cm
                 key: MARIADB_MASTER_ROOT_USER
-          - name: MARIADB_ROOT_USER
-            valueFrom:
-              configMapKeyRef:
-                name: mariadb-cm
-                key: MARIADB_MASTER_ROOT_USER
           - name: MARIADB_MASTER_PASSWORD # old env var
             valueFrom:
               secretKeyRef:
@@ -120,6 +115,13 @@ spec:
               secretKeyRef:
                 name: mariadb-secret # from secret
                 key: MARIADB_ROOT_PASSWORD # matches general root
+          # problematic env var              
+          - name: MARIADB_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_MASTER_ROOT_USER
+          # problematic env var
           - name: MARIADB_ROOT_PASSWORD 
             valueFrom:
               secretKeyRef:
