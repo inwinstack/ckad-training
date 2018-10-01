@@ -63,13 +63,13 @@ spec:
               secretKeyRef:
                 name: database-credentials
                 key: repl-password
-        # livenessProbe:
-        #   exec:
-        #     command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-        #   initialDelaySeconds: 60
-        #   periodSeconds: 30
-        # readinessProbe:
-        #   exec:
-        #     command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-        #   initialDelaySeconds: 15
-        #   periodSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 5
