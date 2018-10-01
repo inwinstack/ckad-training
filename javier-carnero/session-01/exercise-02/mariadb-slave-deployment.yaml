@@ -31,11 +31,6 @@ spec:
           - name: mysql
             containerPort: 3306
         env:
-          - name: MARIADB_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: root-password
           - name: MARIADB_REPLICATION_MODE
             value: slave
           - name: MARIADB_REPLICATION_USER
@@ -53,6 +48,10 @@ spec:
               configMapKeyRef:
                 name: wordpress-config
                 key: mariadb-host
+          - name: MARIADB_MASTER_ROOT_USER
+            value: "root"
+          - name: MARIADB_MASTER_PORT_NUMBER
+            value: "3306"
           - name: MARIADB_MASTER_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
