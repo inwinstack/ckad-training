@@ -11,7 +11,7 @@ spec:
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: mariadb
@@ -28,7 +28,7 @@ spec:
       - name: mariadb
         image: bitnami/mariadb:latest
         ports:
-          - name: mysql
+          - name: mariadb-server
             containerPort: 3306
         env:
           - name: MARIADB_DATABASE
@@ -48,20 +48,6 @@ spec:
                 key: wp-password
           - name: MARIADB_REPLICATION_MODE
             value: slave
-          - name: MARIADB_MASTER_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: wordpress-config
-                key: mariadb-host
-          - name: MARIADB_MASTER_ROOT_USER
-            value: "root"
-          - name: MARIADB_MASTER_PORT_NUMBER
-            value: "3306"
-          - name: MARIADB_MASTER_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: root-password
           - name: MARIADB_REPLICATION_USER
             valueFrom:
               secretKeyRef:
@@ -72,13 +58,23 @@ spec:
               secretKeyRef:
                 name: database-credentials
                 key: repl-password
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: wordpress-config
+                key: mariadb-host
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: root-password
         livenessProbe:
           exec:
-            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-          initialDelaySeconds: 120
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 60
           periodSeconds: 30
         readinessProbe:
           exec:
-            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-          initialDelaySeconds: 30
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 15
           periodSeconds: 5

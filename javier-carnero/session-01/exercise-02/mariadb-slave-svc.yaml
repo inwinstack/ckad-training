@@ -10,9 +10,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: mysql
+    - name: data
       port: 3306
-      targetPort: mysql
+      targetPort: mariadb-server
   selector:
     app: mariadb
     tier: backend

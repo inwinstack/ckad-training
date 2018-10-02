@@ -8,6 +8,10 @@ metadata:
     tier: frontend
 spec:
   type: NodePort
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 7200
   ports:
     - name: frontend
       port: 8080

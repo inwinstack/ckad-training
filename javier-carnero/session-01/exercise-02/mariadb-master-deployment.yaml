@@ -28,7 +28,7 @@ spec:
       - name: mariadb
         image: bitnami/mariadb:latest
         ports:
-          - name: mysql
+          - name: mariadb-server
             containerPort: 3306
         env:
           - name: MARIADB_ROOT_PASSWORD
