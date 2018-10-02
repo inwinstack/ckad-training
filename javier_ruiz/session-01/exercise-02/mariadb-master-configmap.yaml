@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-master
+  namespace: exercise-02
+  labels:
+    app: mariadb-master
+data:
+  MARIADB_REPLICATION_MODE: master
+
