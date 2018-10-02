@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: mariadb
+data:
+  database: bitnami_wordpress
+  user: bn_wordpress
