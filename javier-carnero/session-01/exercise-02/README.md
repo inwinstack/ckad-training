@@ -4,8 +4,8 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 ## Features
 
-* Wordpress with mariadb (one master and two slaves)
-* MariaDB as wordpress backend, not publicly accesible.
+* Two wordpress instances, exposed through LoadBalancer service.
+* MariaDB as wordpress backend (one master and two slaves), not publicly accesible.
 * Config variables at `cm.yaml`
 * Secret variables defined at `command.bash`
 * Liveness/readiness probes implemented.
