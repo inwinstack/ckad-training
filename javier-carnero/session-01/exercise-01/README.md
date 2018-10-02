@@ -16,7 +16,7 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress.
 
-## Excercise original description:
+## Excercise I original description:
 
 ### WP + MariaDB with Canary
 
