@@ -16,17 +16,13 @@ metadata:
   namespace: exercise-02
   labels:
     app: wordpress
-    tier: frontend
-    stage: production
 data:
   MARIADB_HOST: mariadb-master
   MARIADB_PORT_NUMBER: "3306"
   
-  WORDPRESS_DATABASE_USER: k8s_wordpress_user
   WORDPRESS_DATABASE_NAME: k8s_wordpress
 
   WORDPRESS_BLOG_NAME: K8S training - 2st round
-  WORDPRESS_USERNAME: antonio
   WORDPRESS_EMAIL: antonio@example.com
   WORDPRESS_FIRST_NAME: Antonio
   WORDPRESS_LAST_NAME: Kubernetes

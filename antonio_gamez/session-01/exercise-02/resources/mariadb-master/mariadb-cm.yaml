@@ -17,13 +17,10 @@ metadata:
   namespace: exercise-02
   labels:
     app: wordpress
-    tier: database
-    stage: production
 data:
   MARIADB_REPLICATION_MODE_MASTER: master
   MARIADB_REPLICATION_MODE_SLAVE: slave
 
-  MARIADB_USER: k8s_wordpress_user
   MARIADB_DATABASE: k8s_wordpress
 
   MARIADB_MASTER_HOST: mariadb-master

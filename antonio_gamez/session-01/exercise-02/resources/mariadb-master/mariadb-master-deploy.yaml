@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: bitnami/mariadb:10.1.21-r2 # see https://github.com/bitnami/bitnami-docker-mariadb
+        image: bitnami/mariadb:latest # see https://github.com/bitnami/bitnami-docker-mariadb
         ports:
         - name: db-port
           containerPort: 3306
@@ -52,8 +52,8 @@ spec:
         env:
           - name: MARIADB_USER
             valueFrom:
-              configMapKeyRef:
-                name: mariadb-cm
+              secretKeyRef: # from secret
+                name: mariadb-secret
                 key: MARIADB_USER
           - name: MARIADB_PASSWORD
             valueFrom:
@@ -90,7 +90,7 @@ spec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
           initialDelaySeconds: 120
           timeoutSeconds: 5
           periodSeconds: 10
@@ -101,18 +101,14 @@ spec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
           initialDelaySeconds: 120
           timeoutSeconds: 1
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 6
-        imagePullPolicy: Always
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 40%
       maxSurge: 50%
-  revisionHistoryLimit: 10

@@ -16,8 +16,5 @@ metadata:
   namespace: exercise-01
   labels:
     app: wordpress
-    tier: database
-    stage: production
 data:
-  MARIADB_USER: k8s_wordpress_user
   MARIADB_DATABASE: k8s_wordpress

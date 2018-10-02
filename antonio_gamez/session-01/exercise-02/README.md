@@ -27,7 +27,8 @@
 ## Steps to set up this scenario
 
 1) From this directory, run `kubectl create -f ./resources` or exec the `./commands.sh` script.
-2) Open in a browser:  http://18.213.63.179:31080 or  https://18.213.63.179:31443.
+2) Open in a browser:  http://<your_cluster_ip>:31080 or  https://<your_cluster_ip>:31443.
+    2.1) If you do know the IP, a way to retrieve it is `kubectl config view | grep server`
 3) Enjoy your new k8s-flavored Wordpress :)
 
 ## Remarks about the proposed solution

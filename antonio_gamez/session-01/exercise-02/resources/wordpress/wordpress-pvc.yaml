@@ -16,8 +16,8 @@
 #   namespace: exercise-02
 #   labels:
 #     app: wordpress
-#     stage: production
 #     tier: frontend
+#     stage: production
 # spec:
 #   accessModes:
 #     - ReadWriteOnce

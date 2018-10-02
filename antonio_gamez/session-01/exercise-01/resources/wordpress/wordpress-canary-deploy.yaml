@@ -27,7 +27,6 @@ spec:
       tier: frontend
   template:
     metadata:
-      creationTimestamp: 
       labels:
         app: wordpress
         stage: canary
@@ -58,8 +57,8 @@ spec:
               key: MARIADB_PORT_NUMBER
         - name: WORDPRESS_DATABASE_USER
           valueFrom:
-            configMapKeyRef:
-              name: wordpress-cm
+            secretKeyRef: # from secret
+              name: wordpress-secret
               key: WORDPRESS_DATABASE_USER
         - name: WORDPRESS_DATABASE_NAME
           valueFrom:
@@ -73,8 +72,8 @@ spec:
               key: WORDPRESS_BLOG_NAME_CANARY
         - name: WORDPRESS_USERNAME
           valueFrom:
-            configMapKeyRef:
-              name: wordpress-cm
+            secretKeyRef: # from secret
+              name: wordpress-secret
               key: WORDPRESS_USERNAME
         - name: WORDPRESS_EMAIL
           valueFrom:
@@ -121,11 +120,3 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 6
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
-  revisionHistoryLimit: 10

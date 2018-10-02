@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: bitnami/mariadb:10.1.21-r2 # see https://github.com/bitnami/bitnami-docker-mariadb
+        image: bitnami/mariadb:latest # see https://github.com/bitnami/bitnami-docker-mariadb
         ports:
         - name: db-port
           containerPort: 3306
@@ -52,8 +52,8 @@ spec:
         env:
           - name: MARIADB_USER
             valueFrom:
-              configMapKeyRef:
-                name: mariadb-cm
+              secretKeyRef: # from secret
+                name: mariadb-secret
                 key: MARIADB_USER
           - name: MARIADB_PASSWORD
             valueFrom:
@@ -92,47 +92,47 @@ spec:
                 key: MARIADB_REPLICATION_USER
           - name: MARIADB_REPLICATION_PASSWORD
             valueFrom:
-              secretKeyRef:
-                name: mariadb-secret # from secret
+              secretKeyRef: # from secret
+                name: mariadb-secret
                 key: MARIADB_REPLICATION_PASSWORD
-          - name: MARIADB_MASTER_USER # old env var
-            valueFrom:
-              configMapKeyRef:
-                name: mariadb-cm
-                key: MARIADB_MASTER_ROOT_USER
+          # - name: MARIADB_MASTER_USER # old env var
+          #   valueFrom:
+          #     configMapKeyRef:
+          #       name: mariadb-cm
+          #       key: MARIADB_MASTER_ROOT_USER
           - name: MARIADB_MASTER_ROOT_USER
             valueFrom:
               configMapKeyRef:
                 name: mariadb-cm
                 key: MARIADB_MASTER_ROOT_USER
-          - name: MARIADB_MASTER_PASSWORD # old env var
-            valueFrom:
-              secretKeyRef:
-                name: mariadb-secret # from secret
-                key: MARIADB_ROOT_PASSWORD
+          # - name: MARIADB_MASTER_PASSWORD # old env var
+          #   valueFrom:
+          #     secretKeyRef: # from secret
+          #       name: mariadb-secret # from secret
+          #       key: MARIADB_ROOT_PASSWORD
           - name: MARIADB_MASTER_ROOT_PASSWORD
             valueFrom:
-              secretKeyRef:
+              secretKeyRef: # from secret
                 name: mariadb-secret # from secret
                 key: MARIADB_ROOT_PASSWORD # matches general root
           # problematic env var              
-          - name: MARIADB_ROOT_USER
-            valueFrom:
-              configMapKeyRef:
-                name: mariadb-cm
-                key: MARIADB_MASTER_ROOT_USER
+          # - name: MARIADB_ROOT_USER
+          #   valueFrom:
+          #     configMapKeyRef:
+          #       name: mariadb-cm
+          #       key: MARIADB_MASTER_ROOT_USER
           # problematic env var
-          - name: MARIADB_ROOT_PASSWORD 
-            valueFrom:
-              secretKeyRef:
-                name: mariadb-secret # from secret
-                key: MARIADB_ROOT_PASSWORD # matches general root
+          # - name: MARIADB_ROOT_PASSWORD 
+          #   valueFrom:
+          #     secretKeyRef: # from secret
+          #       name: mariadb-secret
+          #       key: MARIADB_ROOT_PASSWORD # matches general root
         livenessProbe:
           exec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_MASTER_ROOT_PASSWORD}"
           initialDelaySeconds: 120
           timeoutSeconds: 5
           periodSeconds: 10
@@ -143,18 +143,14 @@ spec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_MASTER_ROOT_PASSWORD}"
           initialDelaySeconds: 120
           timeoutSeconds: 1
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 6
-        imagePullPolicy: Always
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 40%
       maxSurge: 50%
-  revisionHistoryLimit: 10

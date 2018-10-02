@@ -16,21 +16,21 @@ metadata:
   namespace: exercise-01
   labels:
     app: wordpress
-    stage: production
     tier: database
+    stage: production
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: wordpress
-      stage: production
       tier: database
+      stage: production
   template:
     metadata:
       labels:
         app: wordpress
-        stage: production
         tier: database
+        stage: production
     spec:
       containers:
       - name: mariadb
@@ -42,8 +42,8 @@ spec:
         env:
         - name: MARIADB_USER
           valueFrom:
-            configMapKeyRef:
-              name: mariadb-cm
+            secretKeyRef: # from secret
+              name: mariadb-secret
               key: MARIADB_USER
         - name: MARIADB_DATABASE
           valueFrom:
@@ -52,12 +52,12 @@ spec:
               key: MARIADB_DATABASE
         - name: MARIADB_PASSWORD
           valueFrom:
-            secretKeyRef:
+            secretKeyRef: # from secret
               name: mariadb-secret
               key: MARIADB_PASSWORD
         - name: MARIADB_ROOT_PASSWORD
           valueFrom:
-            secretKeyRef:
+            secretKeyRef: # from secret
               name: mariadb-secret
               key: MARIADB_ROOT_PASSWORD
         livenessProbe:
@@ -65,7 +65,7 @@ spec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
           initialDelaySeconds: 30
           timeoutSeconds: 5
           periodSeconds: 10
@@ -76,18 +76,9 @@ spec:
             command:
             - sh
             - -c
-            - "mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}"
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
           initialDelaySeconds: 5
           timeoutSeconds: 1
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 3
-        imagePullPolicy: Always
-      restartPolicy: Always
-      terminationGracePeriodSeconds: 30
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
-  revisionHistoryLimit: 10

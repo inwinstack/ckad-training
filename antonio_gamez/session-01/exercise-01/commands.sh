@@ -11,7 +11,7 @@
 
 #!/bin/bash
 
-## Create UI (if desired)
+## Create UI (if desired: useful when using minikube or similar)
 # kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 ## then go to: http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/
 
@@ -46,4 +46,5 @@ kubectl create -f ./resources/mariadb
 kubectl create -f ./resources/wordpress
 
 # Remove everything created
-# kubectl delete -f ./resources -R
+# kubectl delete ns exercise-01
+## or kubectl delete -f ./resources -R
