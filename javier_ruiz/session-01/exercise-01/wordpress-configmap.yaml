@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress
+  namespace: exercise-01
+  labels:
+    app: wordpress
+data:
+  database.name: bitnami_wordpress
+  database.user: bn_wordpress
+  email: japi@kolokium.com
+  first.name: Javier
+  last.name: Ruiz
+  blog.name: japi's Blog
