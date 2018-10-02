@@ -4,21 +4,29 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 ## Features
 
-* Wordpress with mariadb (one master and two slaves)
-* MariaDB as wordpress backend, not publicly accesible.
+* Two wordpress instances, exposed through LoadBalancer service.
+* MariaDB as wordpress backend (one master and two slaves), not publicly accesible.
 * Config variables at `cm.yaml`
 * Secret variables defined at `command.bash`
 * Liveness/readiness probes implemented.
-* Session Affinity guaranteed during two hours.
-* Resources requested and limits [TO BE DONE]
+* Resources requested and limits. [TO BE DONE]
 
 ## How to run
 
 With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress.
 
-## Excercise original description:
+## After set-up
 
-## Exercise II
+### Ensure there won't be more than 40% of the replicas unavailable when running rolling updates on slave deployment
+`kubectl patch deployment -n exercise-02  mariadb-slave -p '{"spec":{"strategy":{"rollingUpdate":{"maxUnavailable":"40%"}}}}'`
+
+### Scale slaves to 5 replicas
+`kubectl scale deployment -n exercise-02  mariadb-slave --replicas=5`
+
+### Install & Configure Wordpress HyperDB plugin
+TO BE DONE
+
+## Excercise II original description:
 
 ### WP + MariaDB with replication
 

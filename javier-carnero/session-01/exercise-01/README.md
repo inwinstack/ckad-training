@@ -5,6 +5,7 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 ## Features
 
 * Two versions of Wordpress, _canary_ and _production_ deployed, publicly available under an URL.
+* Wordpress exposed through LoadBalancer service.
 * MariaDB as wordpress backend, not publicly accesible.
 * Config variables at `cm.yaml`
 * Secret variables defined at `command.bash`
@@ -15,7 +16,7 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress.
 
-## Excercise original description:
+## Excercise I original description:
 
 ### WP + MariaDB with Canary
 
