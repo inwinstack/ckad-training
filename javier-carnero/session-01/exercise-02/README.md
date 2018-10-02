@@ -13,18 +13,39 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 ## How to run
 
-With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress.
+With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress: _http://kubernetes:31234_
 
 ## After set-up
 
 ### Ensure there won't be more than 40% of the replicas unavailable when running rolling updates on slave deployment
-`kubectl patch deployment -n exercise-02  mariadb-slave -p '{"spec":{"strategy":{"rollingUpdate":{"maxUnavailable":"40%"}}}}'`
+```
+kubectl patch deployment -n exercise-02  mariadb-slave -p '{"spec":{"strategy":{"rollingUpdate":{"maxUnavailable":"40%"}}}}'
+```
 
 ### Scale slaves to 5 replicas
-`kubectl scale deployment -n exercise-02  mariadb-slave --replicas=5`
+```
+kubectl scale deployment -n exercise-02  mariadb-slave --replicas=5
+```
 
 ### Install & Configure Wordpress HyperDB plugin
-TO BE DONE
+
+WARN: Only after both pods are in a ready state.
+
+First, copy the install script to both wordpress containers (pods with only one container):
+
+```
+kubectl cp hyperdb_install.sh exercise-02/$(kubectl get pods -lapp=wordpress,tier=frontend -n exercise-02 -ojsonpath="{.items[0].metadata.name}"):/hyperdb_install.sh
+
+kubectl cp hyperdb_install.sh exercise-02/$(kubectl get pods -lapp=wordpress,tier=frontend -n exercise-02 -ojsonpath="{.items[1].metadata.name}"):/hyperdb_install.sh
+```
+
+Then, execute the install script on each container:
+
+```
+kubectl exec $(kubectl get pods -lapp=wordpress,tier=frontend -n exercise-02 -o jsonpath="{.items[0].metadata.name}") -n exercise-02 -- /bin/bash -c "chmod +x /hyperdb_install.sh && /hyperdb_install.sh"
+
+kubectl exec $(kubectl get pods -lapp=wordpress,tier=frontend -n exercise-02 -o jsonpath="{.items[1].metadata.name}") -n exercise-02 -- /bin/bash -c "chmod +x /hyperdb_install.sh && /hyperdb_install.sh"
+```
 
 ## Excercise II original description:
 
