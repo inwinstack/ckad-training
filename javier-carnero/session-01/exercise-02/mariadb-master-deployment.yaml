@@ -28,7 +28,7 @@ spec:
       - name: mariadb
         image: bitnami/mariadb:latest
         ports:
-          - name: mysql
+          - name: mariadb-server
             containerPort: 3306
         resources:
           requests:
@@ -43,6 +43,21 @@ spec:
               secretKeyRef:
                 name: database-credentials
                 key: root-password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-dbname
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-password
           - name: MARIADB_REPLICATION_MODE
             value: master
           - name: MARIADB_REPLICATION_USER

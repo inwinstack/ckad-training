@@ -28,7 +28,7 @@ spec:
       - name: mariadb
         image: bitnami/mariadb:latest
         ports:
-          - name: mysql
+          - name: mariadb-server
             containerPort: 3306
         resources:
           requests:
@@ -38,11 +38,21 @@ spec:
             cpu: "1"
             memory: "1G"
         env:
-          - name: MARIADB_ROOT_PASSWORD
+          - name: MARIADB_DATABASE
             valueFrom:
               secretKeyRef:
                 name: database-credentials
-                key: root-password
+                key: wp-dbname
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-password
           - name: MARIADB_REPLICATION_MODE
             value: slave
           - name: MARIADB_REPLICATION_USER
@@ -65,13 +75,13 @@ spec:
               secretKeyRef:
                 name: database-credentials
                 key: root-password
-        # livenessProbe:
-        #   exec:
-        #     command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-        #   initialDelaySeconds: 60
-        #   periodSeconds: 30
-        # readinessProbe:
-        #   exec:
-        #     command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
-        #   initialDelaySeconds: 15
-        #   periodSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 5

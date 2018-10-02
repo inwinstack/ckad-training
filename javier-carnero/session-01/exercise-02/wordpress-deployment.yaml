@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: wordpress
-        image: bitnami/wordpress:4.9.7
+        image: bitnami/wordpress:4.9.8
         ports:
         - name: http-server
           containerPort: 80
@@ -38,31 +38,11 @@ spec:
             cpu: "1"
             memory: "1G"
         env:
-          - name: MARIA_DB_HOST
+          - name: MARIADB_HOST
             valueFrom:
               configMapKeyRef:
                 name: wordpress-config
                 key: mariadb-host
-          - name: MARIADB_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: root-password
-          - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-dbname
-          - name: MYSQL_CLIENT_CREATE_DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-user
-          - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-password
           - name: WORDPRESS_DATABASE_NAME
             valueFrom:
               secretKeyRef:
