@@ -9,7 +9,7 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 * Config variables at `cm.yaml`
 * Secret variables defined at `command.bash`
 * Liveness/readiness probes implemented.
-* Resources requested and limits. [TO BE DONE]
+* Resources requested and limits.
 
 ## How to run
 
