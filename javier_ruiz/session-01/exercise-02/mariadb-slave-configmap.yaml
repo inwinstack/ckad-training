@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb-slave
+data:
+  MARIADB_REPLICATION_MODE: slave
+  MARIADB_MASTER_HOST: mariadb-master
+  MARIADB_MASTER_ROOT_USER: bn_wordpress
