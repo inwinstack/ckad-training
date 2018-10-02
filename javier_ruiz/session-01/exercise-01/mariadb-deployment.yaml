@@ -24,7 +24,7 @@ spec:
         name: mariadb
         env:
         - name: MARIADB_ROOT_PASSWORD
-          valueFrom:   
+          valueFrom:
             secretKeyRef:
               name: mariadb
               key: root.password
@@ -47,12 +47,18 @@ spec:
         - name: mariadb
           containerPort: 3306
         readinessProbe:
-          tcpSocket:
-            port: mariadb
+          exec:
+            command:
+            - bash
+            - -c
+            - mysqladmin status -u root -p$MARIADB_ROOT_PASSWORD
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
-          tcpSocket:
-            port: mariadb
+          exec:
+            command:
+            - bash
+            - -c
+            - mysqladmin status -u root -p$MARIADB_ROOT_PASSWORD
           initialDelaySeconds: 15
           periodSeconds: 20
