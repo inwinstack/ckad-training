@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: busybox
+  namespace: exercise-02
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myblog
+      tier: backend
+      track: slave
+  template:
+    metadata:
+      labels:
+        app: myblog
+        tier: backend
+        track: slave
+    spec:
+      containers:
+      - image: busybox
+        command:
+          - sleep
+          - "3600"
+        imagePullPolicy: IfNotPresent
+        name: busybox
+        envFrom:
+          - configMapRef:
+              name: myblog
+          - secretRef:
+              name: myblog
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: slave
+          - name: MARIADB_MASTER_HOST
+            value: myblog-mariadb-master
+          - name:   MARIADB_MASTER_ROOT_PASSWORD
+            value: "1234567"
+        port1s: 
+          - name: mariadb
+            containerPort: 3306
+      restartPolicy: Always
