@@ -1,3 +1,4 @@
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -45,3 +46,13 @@ spec:
         ports:
         - name: mariadb
           containerPort: 3306
+        readinessProbe:
+          tcpSocket:
+            port: mariadb
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: mariadb
+          initialDelaySeconds: 15
+          periodSeconds: 20

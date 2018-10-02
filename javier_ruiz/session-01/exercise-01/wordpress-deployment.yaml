@@ -9,7 +9,7 @@ spec:
   revisionHistoryLimit: 2
   strategy:
     type: RollingUpdate
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: wordpress
@@ -57,7 +57,16 @@ spec:
             configMapKeyRef:
               name: wordpress
               key: blog.name
-
         ports:
         - name: wordpress
           containerPort: 80
+        readinessProbe:
+          tcpSocket:
+            port: wordpress
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: wordpress
+          initialDelaySeconds: 15
+          periodSeconds: 20
