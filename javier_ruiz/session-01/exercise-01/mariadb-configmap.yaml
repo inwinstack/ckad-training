@@ -7,5 +7,5 @@ metadata:
   labels:
     app: mariadb
 data:
-  database: bitnami_wordpress
-  user: bn_wordpress
+  MARIADB_DATABASE: bitnami_wordpress
+  MARIADB_USER: bn_wordpress

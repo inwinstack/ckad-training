@@ -21,42 +21,15 @@ spec:
       containers:
       - image: bitnami/wordpress:4.9.7
         name: wordpress
+        envFrom:
+        - configMapRef:
+            name: wordpress
         env:
-        - name: WORDPRESS_DATABASE_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: database.name
-        - name: WORDPRESS_DATABASE_USER
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: database.user
         - name: WORDPRESS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: wordpress
               key: database.password
-        - name: WORDPRESS_EMAIL
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: email
-        - name: WORDPRESS_FIRST_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: first.name
-        - name: WORDPRESS_LAST_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: last.name
-        - name: WORDPRESS_BLOG_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: wordpress
-              key: blog.name
         ports:
         - name: wordpress
           containerPort: 80
