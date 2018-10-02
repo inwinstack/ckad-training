@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myblog-wordpress
+  namespace: exercise-01
+  labels:
+    app: myblog
+    tier: frontend
+    track: stable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myblog
+      tier: frontend
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: myblog
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.4
+        name: wordpress
+        readinessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        envFrom:
+          - configMapRef:
+              name: myblog
+          - secretRef:
+              name: myblog
+        ports: 
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+            

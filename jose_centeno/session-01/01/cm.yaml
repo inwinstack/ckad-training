@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myblog
+  namespace: exercise-01
+data:
+  WORDPRESS_USERNAME: user
+  WORDPRESS_EMAIL: user@example.com
+  WORDPRESS_FIRST_NAME: FirstName
+  WORDPRESS_LAST_NAME: LastName
+  WORDPRESS_BLOG_NAME: Usr's blog
+
+  WORDPRESS_DATABASE_NAME: bitnami_wordpress
+  WORDPRESS_DATABASE_USER: bn_wordpress
+
+  MARIADB_DATABASE: bitnami_wordpress
+  MARIADB_USER: bn_wordpress
+  MARIADB_HOST: myblog-mariadb
+  MARIADB_PORT_NUMBER: "3306"
