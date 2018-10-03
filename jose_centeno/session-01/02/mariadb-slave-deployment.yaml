@@ -31,18 +31,11 @@ spec:
         envFrom:
           - configMapRef:
               name: myblog
-#          - secretRef:
-#              name: myblog
         env:
           - name: MARIADB_REPLICATION_MODE
             value: slave
           - name: MARIADB_MASTER_HOST
             value: myblog-mariadb-master
-#          - name: MARIADB_ROOT_PASSWORD
-#            valueFrom:
-#              secretKeyRef:
-#                name: myblog
-#                key: MARIADB_ROOT_PASSWORD
           - name: MARIADB_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -61,3 +54,10 @@ spec:
         ports: 
           - name: mariadb
             containerPort: 3306
+#        resources:
+#          requests:
+#            memory: "64Mi"
+#            cpu: "0.2"
+#          limits:
+#            memory: "128Mi"
+#            cpu: "0.3"

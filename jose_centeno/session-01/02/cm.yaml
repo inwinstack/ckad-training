@@ -22,6 +22,7 @@ data:
   MARIADB_DATABASE: bitnami_wordpress
   MARIADB_USER: bn_wordpress
   MARIADB_HOST: myblog-mariadb-master
+  MARIADB_HOST_SLAVE: myblog-mariadb-slave
   MARIADB_PORT_NUMBER: "3306"
 
 #MariaDB replication
