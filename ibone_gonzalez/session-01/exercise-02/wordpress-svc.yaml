@@ -8,8 +8,7 @@ spec:
   ports:
     - name: "http-host"
       port: 80
-      targetPort: http-host
-      nodePort: 30503
+      targetPort: http
   selector:
     app: wordpress02
     tier: frontend
