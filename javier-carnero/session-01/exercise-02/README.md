@@ -13,7 +13,7 @@ Kubernetes exercise deploying a set of WP instances connected to mariadb.
 
 ## How to run
 
-With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress: _http://kubernetes:31234_
+With *kubectl configured*, do `./command.bash` to start the app. The script will print the URL to access wordpress.
 
 ## After set-up
 

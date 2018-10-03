@@ -9,8 +9,6 @@ metadata:
     release: production
 spec:
   revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
   replicas: 2
   selector:
     matchLabels:
@@ -36,26 +34,6 @@ spec:
               configMapKeyRef:
                 name: wordpress-config
                 key: mariadb-host
-          - name: MARIADB_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: root-password
-          - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-dbname
-          - name: MYSQL_CLIENT_CREATE_DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-user
-          - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-password
           - name: WORDPRESS_DATABASE_NAME
             valueFrom:
               secretKeyRef:

@@ -12,7 +12,6 @@ spec:
     - name: frontend
       port: 80
       targetPort: http-server
-      nodePort: 31234
   selector:
     app: wordpress
     tier: frontend

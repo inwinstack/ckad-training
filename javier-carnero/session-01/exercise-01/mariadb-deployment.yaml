@@ -8,8 +8,6 @@ metadata:
     tier: backend
 spec:
   revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
   replicas: 1
   selector:
     matchLabels:
@@ -28,6 +26,21 @@ spec:
           - name: mariadb-server
             containerPort: 3306
         env:
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-dbname
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-password
           - name: MARIADB_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:

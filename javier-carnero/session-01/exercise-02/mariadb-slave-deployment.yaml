@@ -38,21 +38,6 @@ spec:
             cpu: "50m"
             memory: "500Mi"
         env:
-          - name: MARIADB_DATABASE
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-dbname
-          - name: MARIADB_USER
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-user
-          - name: MARIADB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: wp-password
           - name: MARIADB_REPLICATION_MODE
             value: slave
           - name: MARIADB_REPLICATION_USER
