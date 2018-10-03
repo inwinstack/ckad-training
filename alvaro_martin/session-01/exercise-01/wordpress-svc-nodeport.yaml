@@ -1,0 +1,15 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: wordpress
+  namespace: "exercise-01"
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 32000
+    protocol: TCP
+    port: 80
+    targetPort: http
+  selector:
+    app: wordpress
+  sessionAffinity: ClientIP

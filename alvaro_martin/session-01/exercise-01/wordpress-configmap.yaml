@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress
+  namespace: exercise-01
+data:
+  database: bitnami_wordpress
+  db-user: bn_wordpress

@@ -1,0 +1,71 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    role: slave
+# From here it's a RS
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mariadb
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        role: slave
+        app-served: wordpress
+# From here, it's a POD
+    spec:
+      containers:
+      - name: slave
+        image: bitnami/mariadb:latest
+        ports:
+        - name: mysql
+          containerPort: 3306
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        - name: MARIADB_REPLICATION_MODE
+          value: slave
+        - name: MARIADB_REPLICATION_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb
+              key: replic-user
+        - name: MARIADB_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: replic-pass
+# Slave-only parameters
+        - name: MARIADB_MASTER_HOST
+          value: mariadb-master
+        - name: MARIADB_MASTER_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: rootpass
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          failureThreshold: 5
+          timeoutSeconds: 1
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 15
+          periodSeconds: 30
