@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wordpress01
+      app: wordpress02
   template:
     metadata:
       labels:
-        app: wordpress01
+        app: wordpress02
         tier: frontend
         track: stable
     spec:

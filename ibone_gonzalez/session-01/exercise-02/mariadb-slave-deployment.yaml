@@ -4,7 +4,7 @@ metadata:
   name: mariadb-slave-deployment
   namespace: exercise02
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: wordpress
@@ -21,22 +21,6 @@ spec:
         - image: bitnami/mariadb:latest
           name: mariadb
           env:
-            # - name: MARIADB_MASTER_USER
-            #   valueFrom:
-            #     configMapKeyRef:
-            #       name: exercise02-config
-            #       key: MARIADB_USER
-            # - name: MARIADB_ROOT_PASSWORD
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: mariadb
-            #       key: password
-              
-            # - name: MARIADB_PORT
-            #   valueFrom:
-            #     configMapKeyRef:
-            #       name: exercise02-config
-            #       key: MARIADB_PORT
             - name: MARIADB_DATABASE
               valueFrom:
                 configMapKeyRef:
@@ -61,46 +45,41 @@ spec:
                   key: MARIADB_REPLICATION_USER
             - name: MARIADB_REPLICATION_PASSWORD
               valueFrom:
-                  secretKeyRef:
-                    name: mariadb-pass-replication-user
-                    key: password
+                secretKeyRef:
+                  name: mariadb-pass-replication-user
+                  key: password
             - name: MARIADB_MASTER_ROOT_PASSWORD
               valueFrom:
-                  secretKeyRef:
-                    name: mariadb
-                    key: password
+                secretKeyRef:
+                  name: mariadb
+                  key: password
             - name: MARIADB_USER
               valueFrom:
-                  configMapKeyRef:
-                    name: exercise02-config
-                    key: MARIADB_USER
-#################EDITAR_A_PARTIR_DE_AQUI#################
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_MASTER_USER
             - name: MARIADB_MASTER_PORT
-              value: "3306"
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: exercise02-config
-              #     key: MARIADB_MASTER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_PORT
             - name: MARIADB_MASTER_PORT_NUMBER
-              value: "3306"
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: exercise02-config
-              #     key: MARIADB_MASTER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_PORT
             - name: MARIADB_MASTER_ROOT_USER
-              value: root
-              # valueFrom:
-              #   configMapKeyRef:
-              #     name: exercise02-config
-              #     key: MARIADB_MASTER_ROOT_USER
-#################EDITAR_HASTA__AQUI#################
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_MASTER_USER
           resources:
             requests:
               memory: "128Mi"
-              cpu: "350m"
+              cpu: "250m"
             limits:
               memory: "256Mi"
-              cpu: "750m"
+              cpu: "500m"
           ports:
             - containerPort: 3306
               name: mariadb-port

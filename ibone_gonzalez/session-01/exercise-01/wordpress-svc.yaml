@@ -4,7 +4,7 @@ metadata:
   name: wordpress-service
   namespace: exercise01
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
     - name: "80"
       port: 80
