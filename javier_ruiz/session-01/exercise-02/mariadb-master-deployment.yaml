@@ -21,10 +21,7 @@ spec:
     spec:
       containers:
       - image: bitnami/mariadb:latest
-        name: mariadb
-        envFrom:
-        - configMapRef:
-            name: mariadb
+        name: mariadb-master
         envFrom:
         - configMapRef:
             name: mariadb-master            
@@ -45,7 +42,7 @@ spec:
               name: mariadb
               key: replication_password
         ports:
-        - name: mariadb
+        - name: mariadb-master
           containerPort: 3306
         readinessProbe:
           exec:

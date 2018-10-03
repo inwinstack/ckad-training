@@ -21,19 +21,16 @@ spec:
     spec:
       containers:
       - image: bitnami/mariadb:latest
-        name: mariadb
-        envFrom:
-        - configMapRef:
-            name: mariadb
+        name: mariadb-slave
         envFrom:
         - configMapRef:
             name: mariadb-slave
         env:
         - name: MARIADB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mariadb
-              key: root_password
+         valueFrom:
+           secretKeyRef:
+             name: mariadb
+             key: root_password
         - name: MARIADB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -48,9 +45,9 @@ spec:
           valueFrom:
             secretKeyRef:
               name: mariadb
-              key: master_root_password
+              key: root_password
         ports:
-        - name: mariadb
+        - name: mariadb-slave
           containerPort: 3306
         readinessProbe:
           exec:
