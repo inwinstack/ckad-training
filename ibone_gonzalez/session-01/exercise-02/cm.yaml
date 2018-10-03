@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise02-config
+  namespace: exercise02
+data:
+  MARIADB_MASTER_USER: root
+  MARIADB_USER: user_wordpress
+  MARIADB_DATABASE: wordpress_database
+  MARIADB_PORT: "3306"
+  WORDPRESS_DATABASE_USER: user_wordpress
+  WORDPRESS_DATABASE_NAME: wordpress_database
+  WORDPRESS_PASSWORD: exercise02
+  MARIADB_REPLICATION_MODE_MASTER: "master"
+  MARIADB_REPLICATION_USER: user_replication
+  MARIADB_REPLICATION_MODE_SLAVE: slave

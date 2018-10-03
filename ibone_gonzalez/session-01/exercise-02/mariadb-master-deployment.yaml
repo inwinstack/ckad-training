@@ -1,0 +1,97 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-master-deployment
+  namespace: exercise02
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      role: master
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        role: master
+        tier: backend
+    spec:
+      containers:
+        - image: bitnami/mariadb:latest
+          imagePullPolicy: Always
+          name: mariadb
+          env:
+            - name: MARIADB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_USER
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: password
+            - name: MARIADB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_DATABASE
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pass-user
+                  key: password
+            - name: MARIADB_REPLICATION_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_REPLICATION_MODE_MASTER
+            - name: MARIADB_REPLICATION_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise02-config
+                  key: MARIADB_REPLICATION_USER
+            - name: MARIADB_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pass-replication-user
+                  key: password
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "150m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          ports:
+            - containerPort: 3306
+              name: mariadb-port
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+            initialDelaySeconds: 100
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+            initialDelaySeconds: 100
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 5
+      restartPolicy: Always
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+      maxSurge: 2

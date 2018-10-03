@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise01-config
+  namespace: exercise01
+data:
+  MARIADB_USER: user_wordpress
+  MARIADB_DATABASE: wordpress_database
+  MARIADB_PORT: "3306"
+  WORDPRESS_DATABASE_USER: user_wordpress
+  WORDPRESS_DATABASE_NAME: wordpress_database
+  WORDPRESS_PASSWORD: exercise01
