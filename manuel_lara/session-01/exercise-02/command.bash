@@ -22,10 +22,23 @@ create_tunnel () {
     kubectl port-forward $(kubectl get pods -l app=exercise-02,tier=frontend -o jsonpath="{.items[0].metadata.name}" --namespace=exercise-02) 8080:80 --namespace=exercise-02
 }
 
+apply () {
+    name=$1
+    path=$2
+
+    if [[ $(kubectl get cm --namespace=exercise-02 | grep $name) =~ $name ]]; then
+        kubectl delete cm $name --namespace=exercise-02
+    fi
+
+    kubectl create cm $name --from-file=$path --namespace=exercise-02
+}
+
 echo "Cretaing an isolate namespace..."
 kubectl apply -f $HOME/namespace.yml
 
 echo "Setting up some configuration values"
+apply hyperdb-cm $HOME/hyperDB/db.php
+apply hyperdb-config-cm $HOME/hyperDB/db-config.php
 kubectl apply -f $HOME/configMap.yml
 kubectl apply -f $HOME/secret.yml
 

@@ -123,7 +123,12 @@ spec:
               cpu: "250m"
             limits:
               memory: "1024Mi"
-              cpu: "500m"
+              cpu: "550m"
+          # volumeMounts:
+          #   - name: hyperdb-volume
+          #     mountPath: /opt/bitnami/wordpress/wp-content/db.php
+          #   - name: hyperdb-config-volume
+          #     mountPath: /opt/bitnami/wordpress/db-config.php
           readinessProbe:
             httpGet:
               path: /
@@ -136,3 +141,10 @@ spec:
               port: 80
             initialDelaySeconds: 20
             periodSeconds: 15
+      # volumes:
+      #   - name: hyperdb-volume
+      #     configMap:
+      #       name: hyperdb-cm
+      #   - name: hyperdb-config-volume
+      #     configMap:
+      #       name: hyperdb-config-cm
