@@ -36,7 +36,7 @@ spec:
             value: myblog-mariadb-master
           - name:   MARIADB_MASTER_ROOT_PASSWORD
             value: "1234567"
-        port1s: 
+        ports:
           - name: mariadb
             containerPort: 3306
       restartPolicy: Always

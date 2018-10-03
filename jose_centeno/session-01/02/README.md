@@ -44,8 +44,9 @@ rolling updates on slave deployment. You can document how to do it or include th
 steps in the *commands.bash* file.
 https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment
 
-Rolling update will stop (old pod) & start (new pod) one by one. So, if you have at
-least 2 replicas, you always will have more than 40% of the replicas available.
+From the doc, configure the pod (on deployment) with:
+.spec.strategy.type==RollingUpdate
+.spec.strategy.rollingUpdate.maxUnavailable=40%
 
 * Scale slaves to 5 replicas. You can document how to do it or include the steps
 in the *commands.bash* file.
