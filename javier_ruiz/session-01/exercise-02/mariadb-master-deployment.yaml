@@ -10,6 +10,8 @@ spec:
   revisionHistoryLimit: 2
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
   replicas: 1
   selector:
     matchLabels:
@@ -44,6 +46,13 @@ spec:
         ports:
         - name: mariadb-master
           containerPort: 3306
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.25"
+          limits:
+            memory: "128Mi"
+            cpu: "0.5"
         readinessProbe:
           exec:
             command:
