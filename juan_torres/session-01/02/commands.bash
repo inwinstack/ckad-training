@@ -3,12 +3,12 @@
 kubectl create -f namespace.yaml
 
 kubectl create secret generic secret-mariadb -n exercise-02 \
-	--from-literal=mariadb_password=$(openssl rand -hex $(echo $RANDOM %12 +22 | bc)) \
-	--from-literal=mariadb_replication_password=$(openssl rand -hex $(echo $RANDOM %12 +22 | bc)) \
-	--from-literal=mariadb_root_password=$(openssl rand -hex $(echo $RANDOM %12 +22 | bc))
+	--from-literal=mariadb_password=$(openssl rand -hex $(echo $RANDOM %2 +8 | bc)) \
+	--from-literal=mariadb_replication_password=$(openssl rand -hex $(echo $RANDOM %2 +8 | bc)) \
+	--from-literal=mariadb_root_password=$(openssl rand -hex $(echo $RANDOM %2 +8 | bc))
 
 kubectl create secret generic secret-wordpress -n exercise-02 \
-	--from-literal=wordpress_password=$(openssl rand -hex $(echo $RANDOM %22 +32 | bc))
+	--from-literal=wordpress_password=$(openssl rand -hex $(echo $RANDOM %2 +8 | bc))
 
 kubectl create -f cm.yaml
 

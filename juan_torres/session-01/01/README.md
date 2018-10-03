@@ -55,7 +55,7 @@ You need to guarantee Session Affinity when using Canary Deployments. See https:
 
 ## Solution
 
-Random passwords were created with a range of 22 to 32 digits with hexadecimal format:
+Random passwords:
 
 ```
 # openssl rand -hex $(echo $RANDOM %22 +32 | bc)

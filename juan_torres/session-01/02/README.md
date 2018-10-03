@@ -86,3 +86,10 @@ For the slave nodes, the subsequent modification of the maxUnavailable parameter
 	&& rm -f temp.yaml
 ```
 
+## Problem in slave node
+
+```
+[ERROR] Slave I/O: error connecting to master 'replication_user@mariadb-master:3306' - retry-time: 10  maximum-retries: 86400  message: Access denied for user 'replication_user'@'10.32.0.61' (using password: YES), Internal MariaDB error code: 1045
+```
+
+Solution pass with max 32 characters: https://chrisshort.net/an-annoying-mysql-replication-error-code-1045/
