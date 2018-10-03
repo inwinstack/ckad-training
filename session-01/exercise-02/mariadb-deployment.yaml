@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: exercise01
+spec:
+  replicas: 1
+  template:
+    metadata: 
+        labels:
+          app: mariadb
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        env: 
+        - name: MARIADB_HOST
+          value: "user"
+        - name: MARIADB_PORT_NUMBER
+          value: 3306		
+        - name: WORDPRESS_DATABASE_NAME
+          value: "bitnami_wordpress"	
+        - name: WORDPRESS_TABLE_PREFIX
+          value: "wp_"
+        - name: WORDPRESS_DATABASE_USER
+          value: "bn_wordpress"
+        - name: WORDPRESS_DATABASE_PASSWORD
+          value: "wp_"	
+        - name: ALLOW_EMPTY_PASSWORD
+          value: no
+        ports: 
+                   - port: 3306
+	livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+        initialDelaySeconds: 5
+        periodSeconds: 5
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m
