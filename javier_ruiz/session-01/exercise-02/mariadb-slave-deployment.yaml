@@ -26,11 +26,6 @@ spec:
         - configMapRef:
             name: mariadb-slave
         env:
-        - name: MARIADB_ROOT_PASSWORD
-         valueFrom:
-           secretKeyRef:
-             name: mariadb
-             key: root_password
         - name: MARIADB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -54,7 +49,7 @@ spec:
             command:
             - bash
             - -c
-            - mysqladmin status -u root -p$MARIADB_ROOT_PASSWORD
+            - mysqladmin status -u root -p$MARIADB_MASTER_ROOT_PASSWORD
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
@@ -62,6 +57,6 @@ spec:
             command:
             - bash
             - -c
-            - mysqladmin status -u root -p$MARIADB_ROOT_PASSWORD
+            - mysqladmin status -u root -p$MARIADB_MASTER_ROOT_PASSWORD
           initialDelaySeconds: 15
           periodSeconds: 20
