@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: exercise-02
+  labels:
+    app: wordpress
+spec:
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.7
+        name: wordpress
+        envFrom:
+        - configMapRef:
+            name: wordpress
+        env:
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: database.password
+        ports:
+        - name: wordpress
+          containerPort: 80
+        readinessProbe:
+          tcpSocket:
+            port: wordpress
+          initialDelaySeconds: 25
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: wordpress
+          initialDelaySeconds: 50
+          periodSeconds: 20
