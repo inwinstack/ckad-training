@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-mariadb
+  namespace: exercise-02
+data:
+  mariadb_user: "wordpress"
+  mariadb_database: "wordpress"
+  mariadb_replication_user: "replication_user"
+  mariadb_port: "3306"
+  mariadb_master_host: "mariadb-master"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-wordpress
+  namespace: exercise-02
+data:
+  wordpress_username: "bitnami"
+  wordpress_email: "example@gmail.com"
+  wordpress_blog_name: "Kubernetes Bitnami"
