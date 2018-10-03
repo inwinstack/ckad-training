@@ -27,3 +27,17 @@ To delete all the resources created, just delete the exercise-01 namespace
 
     $ kubectl delete ns exercise-02
 
+To configure that it won't be more than 40% of the replicas unavailable add the following to the deployment.spec.strategy section:
+
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 40%
+
+To scale the mariadb-slaves deployment to 5 replicas use the command:
+
+    kubectl scale deployment/mariadb-slave --replicas=5
+
+The steps needed to configure the HyperDB WP plugin are:
+
+    TODO
