@@ -7,7 +7,7 @@ metadata:
     app: myblog
     tier: frontend
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - port: 80
     targetPort: http

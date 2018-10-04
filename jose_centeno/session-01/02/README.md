@@ -63,11 +63,6 @@ directory and build the image with: sudo docker build --tag jica/wordpress:hyper
 Now, you can use wordpress-hyperDB-deployment.yaml to create the wordpress deployment. Also, it
 is possible to update the image from kubectl
 
-### Tips
-
-* Use a linter to avoid syntax errors on your YAML/JSON files
-* RollingUpdate Strategy: `kubectl explain deploy.spec.strategy`
-
 ### Notes
 
 Docs about how to manager resources on pods:

@@ -36,11 +36,6 @@ spec:
             value: slave
           - name: MARIADB_MASTER_HOST
             value: myblog-mariadb-master
-          - name: MARIADB_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: myblog
-                key: MARIADB_PASSWORD
           - name: MARIADB_REPLICATION_PASSWORD
             valueFrom:
               secretKeyRef:
