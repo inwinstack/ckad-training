@@ -1,0 +1,68 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-exercise-01
+  namespace: exercise-01
+spec:
+  revisionHistoryLimit: 5
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: backend
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb-container
+        ports:
+        - name: mariadb-port
+          containerPort: 3306
+        env:
+        # From Secret
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: exercise-01-secret
+              key: mariadb_root_password
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: exercise-01-secret
+              key: mariadb_password
+        # From ConfigMap
+        #- name: ALLOW_EMPTY_PASSWORD
+        #  value: "yes"      
+        - name: MARIADB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: mariadb_user
+        
+        - name: MARIADB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: mariadb_database
+        # LIVENESS & READINESS PROBES
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 60
+          # periodSeconds default 10 seconds
+          periodSeconds: 20
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 60
+          periodSeconds: 10

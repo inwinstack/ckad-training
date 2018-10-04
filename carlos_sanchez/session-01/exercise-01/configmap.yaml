@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise-01-config
+  namespace: exercise-01
+data:
+  mariadb_host: mariadb
+  mariadb_database: bitnami_wordpress
+  mariadb_user: bn_wordpress
+  wordpress_blog_name: "Charlie's k8s Training"

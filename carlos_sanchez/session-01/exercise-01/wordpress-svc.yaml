@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-service
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: http-port
+    protocol: TCP
+    name: http
+  selector:
+    app: wordpress
+  # the default timeout is "10800" seconds
+  sessionAffinity: ClientIP
