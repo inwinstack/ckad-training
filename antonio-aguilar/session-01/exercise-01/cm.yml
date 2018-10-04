@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-wordpress
+  namespace: exercise-01
+data:
+  wp-blogname: K8s rules!!!
+  wp-firstname: AntonioJose
+  wp-lastname: Aguilar
+  
+  

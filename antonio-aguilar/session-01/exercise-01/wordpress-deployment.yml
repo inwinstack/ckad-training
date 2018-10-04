@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wp-deployment
+  labels:
+    app: wordpress
+    tier: frontend
+  namespace: exercise-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels: 
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - name: wordpress
+        image: bitnami/wordpress:4.9.4
+        env:
+          - name: WORDPRESS_FIRST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wp-firstname
+          - name: WORDPRESS_LAST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wp-lastname
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wp-blogname
+        ports:
+        - name: wp-server
+          containerPort: 80
