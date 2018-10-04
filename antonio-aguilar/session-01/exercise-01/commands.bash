@@ -22,4 +22,4 @@ kubectl get services -n exercise-01
 # kubectl -n exercise-01 exec -it <pod name> -- /bin/bash
 
 # Delete namespace
-kubectl delete namespace exercise-01
+# kubectl delete namespace exercise-01
