@@ -30,7 +30,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: cm-exercise-01
-                key: mariadb-databasename          
+                key: mariadb-databasename
           - name: WORDPRESS_DATABASE_USERNAME
             valueFrom:
               configMapKeyRef:

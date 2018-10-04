@@ -41,7 +41,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: mariadb-secret
-              key: mariadb-root-password    
+              key: mariadb-root-password
         ports:
         - name: mariadb-server
           containerPort: 3306
