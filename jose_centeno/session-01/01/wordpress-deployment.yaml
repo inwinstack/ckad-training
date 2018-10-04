@@ -22,7 +22,7 @@ spec:
         track: stable
     spec:
       containers:
-      - image: bitnami/wordpress:4.9.4
+      - image: bitnami/wordpress:4.9.8
         name: wordpress
         readinessProbe:
           tcpSocket:
@@ -34,10 +34,29 @@ spec:
             port: http
           initialDelaySeconds: 15
           periodSeconds: 20
+        env:
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: WORDPRESS_DATABASE_NAME
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: WORDPRESS_DATABASE_USER
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: WORDPRESS_DATABASE_PASSWORD
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: WORDPRESS_PASSWORD
         envFrom:
           - configMapRef:
-              name: myblog
-          - secretRef:
               name: myblog
         ports: 
           - name: http

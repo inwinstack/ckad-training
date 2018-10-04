@@ -23,21 +23,24 @@ spec:
             port: mariadb
           initialDelaySeconds: 15
           periodSeconds: 20
-#        env:
-#        - name: MYSQL_ROOT_PASSWORD
-#          valueFrom:
-#            secretKeyRef:
-#              name: myblog
-#              key: MYSQL_ROOT_PASSWORD
-#        - name: MYSQL_ROOT_PASSWORD
-#          valueFrom:
-#            secretKeyRef:
-#              name: myblog
-#              key: MYSQL_ROOT_PASSWORD
+        env:
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_USER
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_PASSWORD
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_ROOT_PASSWORD
         envFrom:
           - configMapRef:
-              name: myblog
-          - secretRef:
               name: myblog
         ports: 
           - name: mariadb
