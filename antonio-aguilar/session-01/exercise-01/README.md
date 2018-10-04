@@ -18,3 +18,8 @@ internally (you can consider your cluster supports LoadBalancer service type)
 ### Solution
 
 Sorry, it is not completed. I have been able to deploy configMap object and MariaDB deployment successfully but unfortunately WP deployment have driven me mad. Nervertheless, I have a huge questions list and work to be done.
+
+### Update
+I've done every change suggested
+I have used Secret object
+But, still not able to get up & running wordpress pod...

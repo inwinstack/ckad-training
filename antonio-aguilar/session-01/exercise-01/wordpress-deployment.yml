@@ -21,20 +21,50 @@ spec:
       - name: wordpress
         image: bitnami/wordpress:4.9.4
         env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: cm-exercise-01
+                key: mariadb-host
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-exercise-01
+                key: mariadb-databasename          
+          - name: WORDPRESS_DATABASE_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-exercise-01
+                key: mariadb-user
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-password
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-exercise-01
+                key: wp-user
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wp-secret
+                key: wp-password
           - name: WORDPRESS_FIRST_NAME
             valueFrom:
               configMapKeyRef:
-                name: cm-wordpress
+                name: cm-exercise-01
                 key: wp-firstname
           - name: WORDPRESS_LAST_NAME
             valueFrom:
               configMapKeyRef:
-                name: cm-wordpress
+                name: cm-exercise-01
                 key: wp-lastname
           - name: WORDPRESS_BLOG_NAME
             valueFrom:
               configMapKeyRef:
-                name: cm-wordpress
+                name: cm-exercise-01
                 key: wp-blogname
         ports:
         - name: wp-server
