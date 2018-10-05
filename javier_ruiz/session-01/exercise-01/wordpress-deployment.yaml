@@ -46,15 +46,17 @@ spec:
               name: wordpress
               key: wordpress_email
         ports:
-        - name: wordpress
+        - name: wordpress-http
           containerPort: 80
+        - name: wordpress-https
+          containerPort: 443
         readinessProbe:
           tcpSocket:
-            port: wordpress
+            port: wordpress-http
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: wordpress
+            port: wordpress-http
           initialDelaySeconds: 15
           periodSeconds: 20
