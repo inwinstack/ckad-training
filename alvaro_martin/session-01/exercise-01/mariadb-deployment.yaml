@@ -30,7 +30,7 @@ spec:
               key: rootpass
         - name: MARIADB_USER
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: mariadb
               key: maria-user
         - name: MARIADB_PASSWORD
@@ -44,13 +44,19 @@ spec:
               name: mariadb
               key: database-name
         readinessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_USER} -p${MARIADB_PASSWORD}"
           initialDelaySeconds: 10
           failureThreshold: 5
           timeoutSeconds: 1
         livenessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_USER} -p${MARIADB_PASSWORD}"
           initialDelaySeconds: 15
-          periodSeconds: 30
+          periodSeconds: 10

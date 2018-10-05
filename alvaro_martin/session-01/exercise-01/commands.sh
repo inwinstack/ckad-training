@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export SANDBOX_IP=54.227.233.69
-export KUBECONFIG=~/.kube/sandbox.conf
+#export SANDBOX_IP=54.227.233.69
+#export KUBECONFIG=~/.kube/sandbox.conf
 
 NAMESPACE='exercise-01'
 
-echo "${SANDBOX_IP}   kubernetes" | sudo tee -a /etc/hosts
+#echo "${SANDBOX_IP}   kubernetes" | sudo tee -a /etc/hosts
 
 ## Create NAMESPACE
 kubectl create ns ${NAMESPACE}
@@ -45,8 +45,8 @@ kubectl create -f mariadb-svc.yaml
 kubectl create -f wordpress-deployment.yaml
 kubectl create -f wordpress-canary-deployment.yaml
 # Create external service
-#kubectl create -f wordpress-svc-lb.yaml
-kubectl create -f wordpress-svc-nodeport.yaml
+kubectl create -f wordpress-svc-lb.yaml
+#kubectl create -f wordpress-svc-nodeport.yaml
 
 # Internal check of wordpresscm
 

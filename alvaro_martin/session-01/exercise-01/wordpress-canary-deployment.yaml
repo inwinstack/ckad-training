@@ -26,7 +26,26 @@ spec:
         ports:
         - name: http
           containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
         env:
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: wp-blogname
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: wp-username
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: wp-password
         - name: WORDPRESS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -39,7 +58,7 @@ spec:
               key: database
         - name: WORDPRESS_DATABASE_USER
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: wordpress
               key: db-user
         readinessProbe:

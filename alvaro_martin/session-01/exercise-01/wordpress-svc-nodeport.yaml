@@ -6,10 +6,14 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - nodePort: 32000
+  - nodePort: 80
     protocol: TCP
     port: 80
     targetPort: http
+  - nodePort: 443
+    protocol: TCP
+    port: 443
+    targetPort: https
   selector:
     app: wordpress
   sessionAffinity: ClientIP

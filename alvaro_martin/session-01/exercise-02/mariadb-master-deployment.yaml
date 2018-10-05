@@ -71,13 +71,19 @@ spec:
               name: mariadb
               key: replic-pass
         readinessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_USER} -p${MARIADB_PASSWORD}"
           initialDelaySeconds: 10
           failureThreshold: 5
           timeoutSeconds: 1
         livenessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_USER} -p${MARIADB_PASSWORD}"
           initialDelaySeconds: 15
           periodSeconds: 30

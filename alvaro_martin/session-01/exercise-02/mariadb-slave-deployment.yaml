@@ -11,6 +11,8 @@ spec:
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
   replicas: 2
   selector:
     matchLabels:
@@ -59,13 +61,19 @@ spec:
               name: mariadb
               key: rootpass
         readinessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_REPLICATION_USER} -p${MARIADB_REPLICATION_PASSWORD}"
           initialDelaySeconds: 10
           failureThreshold: 5
           timeoutSeconds: 1
         livenessProbe:
-          tcpSocket:
-            port: 3306
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u${MARIADB_REPLICATION_USER} -p${MARIADB_REPLICATION_PASSWORD}"
           initialDelaySeconds: 15
           periodSeconds: 30

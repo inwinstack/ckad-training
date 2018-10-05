@@ -5,4 +5,4 @@ metadata:
   namespace: exercise-01
 data:
   database: bitnami_wordpress
-  db-user: bn_wordpress
+  wp-blogname: k8s_training

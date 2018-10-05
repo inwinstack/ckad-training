@@ -4,11 +4,15 @@ metadata:
   name: wordpress
   namespace: exercise-02
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: wordpress
   ports:
-  - nodePort: 32288
-    protocol: TCP
+  - name: http
     port: 80
+    protocol: TCP
     targetPort: http
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: https

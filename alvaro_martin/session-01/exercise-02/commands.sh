@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#export SANDBOX_IP=34.227.173.212
+#export SANDBOX_IP=52.207.244.48
 #export KUBECONFIG=~/.kube/sandbox.conf
 
 NAMESPACE='exercise-02'
@@ -11,9 +11,9 @@ NAMESPACE='exercise-02'
 kubectl create ns ${NAMESPACE}
 
 ## Create CONFIGMAP (only to configure apps -> env)
-# kubectl create cm mariadbcm --from-file=./resources/MariaDBCM.yaml
-kubectl create -f resources/mariadb-configmap.yaml
-kubectl create -f resources/wordpress-configmap.yaml
+# kubectl create cm mariadbcm --from-file=./MariaDBCM.yaml
+kubectl create -f mariadb-configmap.yaml
+kubectl create -f wordpress-configmap.yaml
 
 # Check if CM is fine
 #kubectl get configmaps mariadbcm -o yaml
@@ -24,18 +24,18 @@ kubectl create -f resources/wordpress-configmap.yaml
 # kubectl create secret generic wppass --from-literal=password=root
 
 # Need to attach them to a NS as well, so we use a file
-kubectl create -f resources/mariadb-secret.yaml
-kubectl create -f resources/wordpress-secret.yaml
+kubectl create -f mariadb-secret.yaml
+kubectl create -f wordpress-secret.yaml
 
 # To check NS
 # echo $(kubectl get secret mariapass -o json | jq -r '.data.password' | base64 --decode)
 # echo $(kubectl get secret wppass -o json | jq -r '.data.password' | base64 --decode)
 
 # Create MariaDB
-kubectl create -f resources/mariadb-master-deployment.yaml
-kubectl create -f resources/mariadb-master-svc.yaml
-kubectl create -f resources/mariadb-slave-deployment.yaml
-kubectl create -f resources/mariadb-slave-svc.yaml
+kubectl create -f mariadb-master-deployment.yaml
+kubectl create -f mariadb-master-svc.yaml
+kubectl create -f mariadb-slave-deployment.yaml
+kubectl create -f mariadb-slave-svc.yaml
 
 # Internal check of MariaDB
 #kubectl exec -it POD CONTAINER -- mysql -u bn_wordpress -pwp-root wp-database
@@ -43,9 +43,9 @@ kubectl create -f resources/mariadb-slave-svc.yaml
 #kubectl -n exercise-02 exec -it POD -- mysql -uroot -prootroot bitnami_wordpress
 
 # Create Wordpress deployment
-kubectl create -f resources/wordpress-deployment.yaml
+kubectl create -f wordpress-deployment.yaml
 # Create external service
-kubectl create -f resources/wordpress-svc.yaml
+kubectl create -f wordpress-svc.yaml
 
 # HOW TO
 
@@ -56,7 +56,7 @@ kubectl create -f resources/wordpress-svc.yaml
 
 ## Scale slaves to 5 replicas.
 ## Based on the same doc
-# kubectl scale deployment mariadb-slave --replicas=5
+kubectl scale deployment mariadb-slave --replicas=5
 
 ## steps to follow to install HyperDB WP plugin and configure it to balance SQL
 ## request between Master&Slaves services
