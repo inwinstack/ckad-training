@@ -8,8 +8,6 @@ metadata:
     app: mariadb
 spec:
   revisionHistoryLimit: 2
-  strategy:
-    type: RollingUpdate
   replicas: 1
   selector:
     matchLabels:
@@ -36,6 +34,16 @@ spec:
             secretKeyRef:
               name: mariadb
               key: password
+        - name: MARIADB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: database
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: user
         ports:
         - name: mariadb
           containerPort: 3306
