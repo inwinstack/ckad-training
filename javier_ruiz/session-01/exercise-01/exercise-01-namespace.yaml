@@ -1,6 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  labels:
-    name: exercise-01
   name: exercise-01
