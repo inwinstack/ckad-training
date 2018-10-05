@@ -46,13 +46,12 @@ spec:
         ports:
         - name: mariadb-slave
           containerPort: 3306
-        resources:
           requests:
-            memory: "64Mi"
-            cpu: "0.25"
-          limits:
             memory: "128Mi"
-            cpu: "0.5"
+            cpu: "0.50"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
         readinessProbe:
           exec:
             command:
