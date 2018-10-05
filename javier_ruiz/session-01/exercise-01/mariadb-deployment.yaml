@@ -20,9 +20,6 @@ spec:
       containers:
       - image: bitnami/mariadb:latest
         name: mariadb
-        envFrom:
-        - configMapRef:
-            name: mariadb
         env:
         - name: MARIADB_ROOT_PASSWORD
           valueFrom:

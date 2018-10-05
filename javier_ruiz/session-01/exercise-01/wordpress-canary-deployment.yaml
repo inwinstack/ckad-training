@@ -26,11 +26,26 @@ spec:
         - configMapRef:
             name: wordpress
         env:
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: database_name
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: database_user
         - name: WORDPRESS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: wordpress
-              key: database.password
+              key: database_password
+        - name: WORDPRESS_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: wordpress_email
         ports:
         - name: wordpress-http
           containerPort: 80
