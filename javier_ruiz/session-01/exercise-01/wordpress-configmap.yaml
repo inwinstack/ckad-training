@@ -7,9 +7,6 @@ metadata:
   labels:
     app: wordpress
 data:
-  WORDPRESS_DATABASE_NAME: bitnami_wordpress
-  WORDPRESS_DATABASE_USER: bn_wordpress
-  WORDPRESS_EMAIL: japi@kolokium.com
   WORDPRESS_FIRST_NAME: Javier
   WORDPRESS_LAST_NAME: Ruiz
   WORDPRESS_BLOG_NAME: japi's Blog
