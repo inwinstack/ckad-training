@@ -28,8 +28,10 @@ spec:
       - name: wordpress
         image: bitnami/wordpress:4.9.8
         ports:
-        - name: http-server
+        - name: http
           containerPort: 80
+        - name: https
+          containerPort: 443
         resources:
           requests:
             cpu: "40m"

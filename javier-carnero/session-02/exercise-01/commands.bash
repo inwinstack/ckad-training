@@ -29,8 +29,14 @@ kubectl create -f wordpress-svc.yaml
 kubectl create -f drupal-deployment.yaml
 kubectl create -f drupal-svc.yaml
 
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout tls.key -out tls.crt
+kubectl create secret tls sslcerts --namespace="exercise-01" --key tls.key --cert tls.crt
+echo "kubernetes   myblog.com" | sudo tee -a /etc/hosts
+kubectl create -f ingress.yaml
+
+
 # Access via browser to:
 echo ""
 echo "After a few minutes access to:"
-echo "Wordpress: http://kubernetes:$(kubectl get svc wordpress -n exercise-01 -o jsonpath="{.spec.ports[0].nodePort}")"
-echo "Drupal: http://kubernetes:$(kubectl get svc drupal -n exercise-01 -o jsonpath="{.spec.ports[0].nodePort}")"
+echo "Wordpress: https://myblog.com"
+echo "Drupal: https://drupal.myblog.com"  # TODO: /drupal
