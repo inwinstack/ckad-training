@@ -1,0 +1,142 @@
+############################ # ############################
+## Bitnami K8S training
+## session02/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: wordpress deployment creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for wordpress
+############################ # ############################
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb-master-sts
+  namespace: s02-exercise-01
+  labels:
+    app: mariadb
+    tier: database
+    role: master
+spec:
+  replicas: 1
+  serviceName: mariadb
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: database
+      role: master
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: database
+        role: master
+    spec:
+      securityContext: # REVISAR PARA QUE SIRVE ESTO
+        runAsUser: 1001
+        fsGroup: 1001
+      # affinity: # REVISAR PARA QUE SIRVE ESTO
+      #   podAntiAffinity:
+      #     preferredDuringSchedulingIgnoredDuringExecution:
+      #     - weight: 1
+      #       podAffinityTerm:
+      #         topologyKey: kubernetes.io/hostname
+      #         labelSelector:
+      #           matchLabels:
+      #             app: mariadb
+      #             tier: database
+      #             role: master
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:10.1
+        env:
+        - name: MARIADB_ROOT_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_USER
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_PASSWORD
+        - name: MARIADB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-master-env-cm
+              key: MARIADB_DATABASE
+        - name: MARIADB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-master-env-cm
+              key: MARIADB_USER
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_PASSWORD
+        # Replication vars
+        - name: MARIADB_REPLICATION_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-master-env-cm
+              key: MARIADB_REPLICATION_MODE
+        - name: MARIADB_REPLICATION_USER
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb-master-env-cm
+              key: MARIADB_REPLICATION_USER
+        - name: MARIADB_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_REPLICATION_PASSWORD
+        ports:
+        - name: mariadb
+          containerPort: 3306
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -utoor -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -utoor -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        resources: {} # not limited by now
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /bitnami/mariadb
+        - name: config
+          mountPath: /opt/bitnami/mariadb/conf/my.cnf
+          subPath: my.cnf
+      volumes:
+        - name: config
+          configMap:
+            name: mariadb-master-config-cm
+  volumeClaimTemplates:
+    - metadata:
+        name: mariadb-data
+        labels:
+          app: mariadb
+          tier: database
+          role: master
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 8Gi
+        # storageClassName: "" # disables dynamic provisioning
+        storageClassName: null # chooses the default provisioner (gp2 on AWS)
+    
