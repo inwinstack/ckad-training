@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: mariadb
-        image: bitnami/mariadb:latest
+        image: bitnami/mariadb:10.1
         ports:
           - name: mysql
             containerPort: 3306
