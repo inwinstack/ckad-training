@@ -157,6 +157,6 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 8Gi
+            storage: 4Gi
         # storageClassName: "" # disables dynamic provisioning
         storageClassName: null # chooses the default provisioner (gp2 on AWS)

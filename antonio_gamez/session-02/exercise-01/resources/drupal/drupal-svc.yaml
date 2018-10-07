@@ -5,31 +5,31 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: wordpress service
-# Purpose: exposes a "wordpress" NodePort service through the kubedns
+# File: drupal service
+# Purpose: exposes a "drupal" NodePort service through the kubedns
 ############################ # ############################
 ---
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: wordpress
+  name: drupal
   namespace: s02-exercise-01
   labels:
-    app: wordpress
+    app: drupal
     tier: frontend
 spec:
   selector:
-    app: wordpress
+    app: drupal
     tier: frontend
   ports:
   - name: http
     protocol: TCP
     port: 80
     targetPort: http
-    nodePort: 31080
+    nodePort: 31081
   - name: https
     protocol: TCP
     port: 443
     targetPort: https
-    nodePort: 31443
+    nodePort: 31444
   type: NodePort
