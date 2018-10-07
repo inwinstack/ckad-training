@@ -41,7 +41,7 @@ spec:
           - name: MARIADB_HOST
             valueFrom:
               configMapKeyRef:
-                name: wordpress-config
+                name: frontend-config
                 key: mariadb-host
           - name: WORDPRESS_DATABASE_NAME
             valueFrom:
@@ -71,7 +71,7 @@ spec:
           - name: WORDPRESS_BLOG_NAME
             valueFrom:
               configMapKeyRef:
-                name: wordpress-config
+                name: frontend-config
                 key: blog-name
         livenessProbe:
           httpGet:

@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: wordpress
+  name: drupal
   namespace: exercise-01
   labels:
-    app: wordpress
+    app: drupal
     tier: frontend
 spec:
   type: NodePort
   ports:
-    - name: wordpress
+    - name: drupal
       port: 80
-      targetPort: http-server
+      targetPort: http
   selector:
-    app: wordpress
+    app: drupal
     tier: frontend

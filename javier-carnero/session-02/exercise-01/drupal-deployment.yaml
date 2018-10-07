@@ -1,0 +1,128 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: drupal
+  namespace: exercise-01
+  labels:
+    app: drupal
+    tier: frontend
+    release: production
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal
+      tier: frontend
+      release: production
+  template:
+    metadata:
+      labels:
+        app: drupal
+        tier: frontend
+        release: production
+    spec:
+      initContainers:
+      - name: init-myservice
+        image: bitnami/mariadb:10.1
+        command:
+        - sh
+        - -c
+        - |
+          'until mysqladmin status -h$MARIADB_HOST -uroot -p$MARIADB_ROOT_PASSWORD; do'
+            'echo waiting for mariadb...;'
+            'sleep 2;'
+          'done;'
+          'exec mysql -h"$MARIADB_HOST" -uroot -p"$MARIADB_ROOT_PASSWORD" -Bse '
+            '"'
+            'CREATE DATABASE $DRUPAL_DATABASE_NAME;'
+            'CREATE USER '$DRUPAL_DATABASE_USER'@'%' IDENTIFIED BY '$DRUPAL_DATABASE_PASSWORD';'
+            'GRANT ALL PRIVILEGES ON `DRUPAL_DATABASE_NAME`.* TO 'DRUPAL_DATABASE_USER'@'%' WITH GRANT OPTION;'
+            'FLUSH PRIVILEGES;'
+            '"'
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: frontend-config
+                key: mariadb-host
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: root-password
+          - name: DRUPAL_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-dbname
+          - name: DRUPAL_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-user
+          - name: DRUPAL_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-password
+      containers:
+      - name: drupal
+        image: bitnami/drupal:8.6.1
+        ports:
+        - name: http
+          containerPort: 80
+        resources:
+          requests:
+            cpu: "40m"
+            memory: "250Mi"
+          limits:
+            cpu: "80m"
+            memory: "500Mi"
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: frontend-config
+                key: mariadb-host
+          - name: DRUPAL_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-dbname
+          - name: DRUPAL_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-user
+          - name: DRUPAL_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: dr-password
+          - name: DRUPAL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: dr-credentials
+                key: user
+          - name: DRUPAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: dr-credentials
+                key: password
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /dr-login.php
+            port: 80
+          initialDelaySeconds: 300
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /dr-login.php
+            port: 80
+          initialDelaySeconds: 180
+          periodSeconds: 15
