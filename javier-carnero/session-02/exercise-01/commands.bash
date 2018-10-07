@@ -23,8 +23,8 @@ kubectl create secret generic dr-credentials -n exercise-01 \
 kubectl create -f mariadb-deployment.yaml
 kubectl create -f mariadb-svc.yaml
 
-#kubectl create -f wordpress-deployment.yaml
-#kubectl create -f wordpress-svc.yaml
+kubectl create -f wordpress-deployment.yaml
+kubectl create -f wordpress-svc.yaml
 
 kubectl create -f drupal-deployment.yaml
 kubectl create -f drupal-svc.yaml
