@@ -1,0 +1,85 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: database
+      component: slave
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: database
+        component: slave
+    spec:
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:latest
+        env:
+        - name: MARIADB_REPLICATION_MODE
+          value: "slave"
+        - name: MARIADB_REPLICATION_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: replication-user
+        - name: MARIADB_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: replication-password
+        - name: MARIADB_MASTER_HOST
+          value: "mariadb-master"
+        - name: MARIADB_MASTER_PORT_NUMBER
+          value: "3306"
+        - name: MARIADB_MASTER_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: root-user
+        - name: MARIADB_MASTER_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: root-password
+        ports:
+        - name: mysql
+          containerPort: 3306
+        # resources:
+        #   requests:
+        #     memory: 256Mi
+        #     cpu: 200m
+        #   limits:
+        #     memory: 512Mi
+        #     cpu: 300m        
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_MASTER_ROOT_PASSWORD"]
+        livenessProbe:
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_MASTER_ROOT_PASSWORD"]
+        volumeMounts:
+        - name: data
+          mountPath: /bitnami/mariadb
+      volumes:
+      - name: data
+        emptyDir: {}
