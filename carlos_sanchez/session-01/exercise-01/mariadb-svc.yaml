@@ -1,0 +1,15 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: mariadb
+spec:
+  type: ClusterIP 
+  ports:
+  - name: mariadb-clusterip
+    port: 3306
+    targetPort: mariadb-port
+  selector:
+    app: mariadb
