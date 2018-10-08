@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-config
+  namespace: exercise-02
+data:
+  mariadb-host: mariadb-master
+  blog-name: JCarnero's K8s CKAD Training

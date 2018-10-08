@@ -1,0 +1,72 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    tier: backend
+    role: slave
+spec:
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: backend
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: backend
+        role: slave
+    spec:
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:latest
+        ports:
+          - name: mariadb-server
+            containerPort: 3306
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "250Mi"
+          limits:
+            cpu: "50m"
+            memory: "500Mi"
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: slave
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: repl-user
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: repl-password
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: wordpress-config
+                key: mariadb-host
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: root-password
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -u$MARIADB_REPLICATION_USER -p$MARIADB_REPLICATION_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 5
