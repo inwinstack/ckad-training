@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-exercise-01
+  namespace: exercise-01
+data:
+  wp-user: antonio_aguilar
+  wp-blogname: K8s rules!!!
+  wp-firstname: Antonio-Jose
+  wp-lastname: Aguilar
+  mariadb-host: mariadb
+  mariadb-user: antonio_aguilar
+  mariadb-databasename: kubewordpress
+  
