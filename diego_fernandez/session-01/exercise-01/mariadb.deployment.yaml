@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: mariadb
+spec:
+  revisionHistoryLimit: 2
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        ports:
+        - name: tcp
+          containerPort: 3306
+        env:
+          - name: MARIADB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: database-name
+          - name: MARIADB_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: database-user
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secrets
+                key: root-password
