@@ -1,0 +1,96 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: mariadb
+    mode: slave
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mariadb
+      mode: slave
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mariadb
+        mode: slave
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb-slave
+        ports:
+          - name: mariadb
+            containerPort: 3306
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: "slave"
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_master_host
+          - name: MARIADB_MASTER_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_port
+          # - name: MASTER_ROOT_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: secret-mariadb
+          #       key: mariadb_root_password
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_replication_user
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_replication_password
+        resources:
+          limits:
+            cpu: 250m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        # livenessProbe:
+        #   exec:
+        #     command:
+        #     - "/bin/bash"
+        #     - "-c"
+        #     - "mysql -u root -p$MARIADB_MASTER_ROOT_PASSWORD -e 'SHOW GLOBAL STATUS;' \
+        #           && kill -0 $(cat /opt/bitnami/mariadb/tmp/mysqld.pid)"
+        #   initialDelaySeconds: 25
+        #   periodSeconds: 15
+        # readinessProbe:
+        #   exec:
+        #     command:
+        #     - "/bin/bash"
+        #     - "-c"
+        #     - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;'"
+        #   initialDelaySeconds: 25
+        #   periodSeconds: 15
+      #   volumeMounts:
+      #   - name: volume-mariadb
+      #     mountPath: /bitnami/mysql/data
+      #     subPath: wordpress/mariadb
+      # volumes:
+      # - name: volume-mariadb
+      #   persistentVolumeClaim:
+      #     claimName: pvc-mariadb

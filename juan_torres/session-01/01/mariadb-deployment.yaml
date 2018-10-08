@@ -1,0 +1,86 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-database
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mariadb
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mariadb
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb-database
+        ports:
+          - name: mariadb
+            containerPort: 3306
+        env:
+          - name: MARIADB_EXTRA_FLAGS
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_extra_flags
+          - name: MARIADB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_database
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+        resources:
+          limits:
+            cpu: 250m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;' \
+                  && kill -0 $(cat /opt/bitnami/mariadb/tmp/mysqld.pid)"
+          initialDelaySeconds: 60
+          periodSeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;'"
+          initialDelaySeconds: 60
+          periodSeconds: 15
+      #   volumeMounts:
+      #   - name: volume-mariadb
+      #     mountPath: /bitnami
+      #     subPath: wordpress/mariadb
+      # volumes:
+      # - name: volume-mariadb
+      #   persistentVolumeClaim:
+      #     claimName: pvc-mariadb

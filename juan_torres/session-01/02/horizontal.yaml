@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mariadb-slave
+  namespace: exersice-02
+spec:
+  scaleRef:
+    kind: Deployment
+    name: mariadb-slave
+    namespace: exercise-02
+    subresource: scale
+  minReplicas: 2
+  maxReplicas: 6
+  cpuUtilization:
+targetPercentage: 80
+---
+apiVersion: extensions/v1beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: wordpress-prod
+  namespace: exersice-02
+spec:
+  scaleRef:
+    kind: Deployment
+    name: wordpress-prod
+    namespace: exercise-02
+    subresource: scale
+  minReplicas: 1
+  maxReplicas: 4
+  cpuUtilization:
+targetPercentage: 60

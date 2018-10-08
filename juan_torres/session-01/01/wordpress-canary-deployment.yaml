@@ -1,0 +1,106 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-canary
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  replicas: 1
+  revisionHistoryLimit: 6
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.8
+        name: wordpress-canary
+        ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_host
+          - name: MARIADB_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_port
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_user
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_password
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_database
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wordpress_username
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-wordpress
+                key: wordpress_password
+          - name: WORDPRESS_EMAIL
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wordpress_email
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-wordpress
+                key: wordpress_blog_name
+        resources:
+          limits:
+            cpu: 350m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "curl -I localhost:80 | grep -c 1 && kill -0 $(cat /opt/bitnami/apache/tmp/httpd.pid)"
+          initialDelaySeconds: 60
+          periodSeconds: 25
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "curl -I localhost:80 | grep -c 1"
+      #   volumeMounts:
+      #   - name: volume-wordpress
+      #     mountPath: /bitnami
+      #     subPath: wordpress/wordpress
+      # volumes:
+      # - name: volume-wordpress
+      #   persistentVolumeClaim:
+      #     claimName: pvc-wordpress
