@@ -33,10 +33,10 @@ spec:
       - name: wordpress
         image: bitnami/wordpress:latest
         ports:
-        - name: http
+        - name: http-port
           containerPort: 80
           protocol: TCP
-        - name: https
+        - name: https-port
           containerPort: 443
           protocol: TCP
         resources: {}
@@ -122,17 +122,3 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 6
-        volumeMounts:
-        - mountPath: /bitnami/apache
-          name: wordpress-data
-          subPath: apache
-        - mountPath: /bitnami/wordpress
-          name: wordpress-data
-          subPath: wordpress
-        - mountPath: /bitnami/php
-          name: wordpress-data
-          subPath: php
-      volumes:
-        - name: wordpress-data
-          persistentVolumeClaim:
-            claimName: wordpress-pvc

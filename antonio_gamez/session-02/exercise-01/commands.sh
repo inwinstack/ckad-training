@@ -19,13 +19,11 @@ kubectl config set-context $(kubectl config current-context) --namespace=s02-exe
 # Check it by `kubectl config view --minify`
 
 # Delete previously created pvc
-kubectl delete pvc --all 
+# kubectl delete pvc --all 
 
 ## Create all resources (in order: db master, frontend)
 kubectl create -f ./resources/mariadb-master
 kubectl create -f ./resources/mariadb-slave
-kubectl create -f ./resources/wordpress
-kubectl create -f ./resources/drupal
 
 # Remove everything created
 # kubectl delete ns s02-exercise-01

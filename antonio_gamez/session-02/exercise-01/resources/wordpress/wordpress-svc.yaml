@@ -22,14 +22,14 @@ spec:
     app: wordpress
     tier: frontend
   ports:
-  - name: http
+  - name: http-svc-port
     protocol: TCP
     port: 80
-    targetPort: http
+    targetPort: http-port
     nodePort: 31080
-  - name: https
+  - name: https-svc-port
     protocol: TCP
     port: 443
-    targetPort: https
+    targetPort: https-port
     nodePort: 31443
   type: NodePort
