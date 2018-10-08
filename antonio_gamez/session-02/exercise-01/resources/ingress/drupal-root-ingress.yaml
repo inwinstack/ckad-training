@@ -1,0 +1,39 @@
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session02/exercise01
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: drupal ingres
+# # Purpose: redirects "myblog.com" to drupal
+# ############################ # ############################
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: drupal-root-ingress
+  namespace: s02-exercise-01
+  labels:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" 
+
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(.*)$ /drupal/$1 redirect; # do the 301 redirect to /.../ -> /drupal/.../
+spec:
+  tls:
+  - hosts:
+    - antgamdiapc.lsi.us.es
+    secretName: antgamdiapc-lsi-us-es-tls
+  rules:
+  - host: drupal.myblog.com # drupal.myblog.com/drupal: drupal
+    http:
+      paths:
+      - path: / # handle base path requests
+        backend:
+          serviceName: drupal
+          servicePort: http

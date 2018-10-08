@@ -1,0 +1,29 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: drupal configmap creation
+# Purpose: creates key/value pairs to be used in drupal
+############################ # ############################
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: antgamdiapc-lsi-us-es
+  namespace: s02-exercise-01
+spec:
+  secretName: antgamdiapc-lsi-us-es-tls
+  issuerRef:
+    name: letsencrypt-staging
+  commonName: antgamdiapc.lsi.us.es
+  dnsNames:
+  - antgamdiapc.lsi.us.es
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - antgamdiapc.lsi.us.es
