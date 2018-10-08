@@ -1,0 +1,13 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: mariadb-service-slave
+  namespace: exercise02
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress
+    tier: backend
+    role: slave
