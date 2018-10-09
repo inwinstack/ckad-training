@@ -21,9 +21,15 @@ spec:
         app: mariadb
         tier: backend
     spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
       containers:
       - name: mariadb
         image: bitnami/mariadb:10.1
+        volumeMounts:
+        - mountPath: /bitnami/mariadb
+          name: mariadb-data
         ports:
           - name: mysql
             containerPort: 3306
@@ -65,3 +71,7 @@ spec:
             command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
           initialDelaySeconds: 15
           periodSeconds: 5
+      volumes:
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb-pvc

@@ -27,6 +27,9 @@ spec:
       containers:
       - name: wordpress
         image: bitnami/wordpress:4.9.8
+        volumeMounts:
+        - mountPath: /bitnami
+          name: wordpress-data
         ports:
         - name: http
           containerPort: 80
@@ -79,13 +82,17 @@ spec:
           httpGet:
             scheme: HTTP
             path: /wp-login.php
-            port: 80
+            port: http
           initialDelaySeconds: 300
           periodSeconds: 30
         readinessProbe:
           httpGet:
             scheme: HTTP
             path: /wp-login.php
-            port: 80
+            port: http
           initialDelaySeconds: 180
           periodSeconds: 15
+      volumes:
+      - name: wordpress-data
+        persistentVolumeClaim:
+          claimName: wordpress-pvc

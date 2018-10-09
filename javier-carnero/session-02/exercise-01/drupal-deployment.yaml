@@ -27,6 +27,9 @@ spec:
       containers:
       - name: drupal
         image: bitnami/drupal:8.6.1
+        volumeMounts:
+        - mountPath: /bitnami
+          name: drupal-data
         ports:
         - name: http
           containerPort: 80
@@ -107,3 +110,7 @@ spec:
             path: /user/login
             port: http
           initialDelaySeconds: 480
+      volumes:
+      - name: drupal-data
+        persistentVolumeClaim:
+          claimName: drupal-pvc

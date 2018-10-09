@@ -20,14 +20,18 @@ kubectl create secret generic dr-credentials -n exercise-01 \
 --from-literal=user=drupal \
 --from-literal=password=training
 
-kubectl create -f mariadb-deployment.yaml
-kubectl create -f mariadb-svc.yaml
+kubectl create --save-config -f mariadb-pvc.yaml
+kubectl create --save-config -f wordpress-pvc.yaml
+kubectl create --save-config -f drupal-pvc.yaml
 
-kubectl create -f wordpress-deployment.yaml
-kubectl create -f wordpress-svc.yaml
+kubectl create --save-config -f mariadb-deployment.yaml
+kubectl create --save-config -f mariadb-svc.yaml
 
-kubectl create -f drupal-deployment.yaml
-kubectl create -f drupal-svc.yaml
+kubectl create --save-config -f wordpress-deployment.yaml
+kubectl create --save-config -f wordpress-svc.yaml
+
+kubectl create --save-config -f drupal-deployment.yaml
+kubectl create --save-config -f drupal-svc.yaml
 
 mkdir -p key/wp
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout key/wp/tls.key -out key/wp/tls.crt
@@ -37,11 +41,18 @@ mkdir -p key/dp
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=drupal.myblog.com" -keyout key/dp/tls.key -out key/dp/tls.crt
 kubectl create secret tls dp-sslcerts --namespace="exercise-01" --key key/dp/tls.key --cert key/dp/tls.crt
 
-kubectl create -f ingress.yaml
+kubectl create --save-config -f ingress.yaml
 
 
 # Access via browser to:
 echo ""
+echo "---------------------------------"
+echo "Add your node IP to /etc/hosts, with the following entries:"
+echo "\$CLUSTER_NODE_IP kubernetes"
+echo "\$CLUSTER_NODE_IP myblog.com"
+echo "\$CLUSTER_NODE_IP drupal.myblog.com"
+echo ""
+echo "---------------------------------"
 echo "After a few minutes access to:"
 echo "Wordpress: https://myblog.com"
 echo "Drupal: https://drupal.myblog.com"  # TODO: /drupal
