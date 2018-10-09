@@ -1,0 +1,156 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb deployment creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for mariadb slave
+############################ # ############################
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: mariadb-slave-deploy
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: database
+    mode: slave
+    stage: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: database
+      mode: slave
+      stage: production
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: database
+        mode: slave
+        stage: production
+    spec:
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:latest # see https://github.com/bitnami/bitnami-docker-mariadb
+        ports:
+        - name: db-port
+          containerPort: 3306
+          protocol: TCP
+        resources:
+            requests:
+              memory: "256m"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+        env:
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef: # from secret
+                name: mariadb-secret
+                key: MARIADB_USER
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret # from secret
+                key: MARIADB_PASSWORD
+          - name: MARIADB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_DATABASE
+          - name: MARIADB_REPLICATION_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_REPLICATION_MODE_SLAVE
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_MASTER_HOST
+          - name: MARIADB_MASTER_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_MASTER_PORT
+          - name: MARIADB_MASTER_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_MASTER_PORT
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_REPLICATION_USER
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef: # from secret
+                name: mariadb-secret
+                key: MARIADB_REPLICATION_PASSWORD
+          # - name: MARIADB_MASTER_USER # old env var
+          #   valueFrom:
+          #     configMapKeyRef:
+          #       name: mariadb-cm
+          #       key: MARIADB_MASTER_ROOT_USER
+          - name: MARIADB_MASTER_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: mariadb-cm
+                key: MARIADB_MASTER_ROOT_USER
+          # - name: MARIADB_MASTER_PASSWORD # old env var
+          #   valueFrom:
+          #     secretKeyRef: # from secret
+          #       name: mariadb-secret # from secret
+          #       key: MARIADB_ROOT_PASSWORD
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef: # from secret
+                name: mariadb-secret # from secret
+                key: MARIADB_ROOT_PASSWORD # matches general root
+          # problematic env var              
+          # - name: MARIADB_ROOT_USER
+          #   valueFrom:
+          #     configMapKeyRef:
+          #       name: mariadb-cm
+          #       key: MARIADB_MASTER_ROOT_USER
+          # problematic env var
+          # - name: MARIADB_ROOT_PASSWORD 
+          #   valueFrom:
+          #     secretKeyRef: # from secret
+          #       name: mariadb-secret
+          #       key: MARIADB_ROOT_PASSWORD # matches general root
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_MASTER_ROOT_PASSWORD}"
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_MASTER_ROOT_PASSWORD}"
+          initialDelaySeconds: 120
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+      maxSurge: 50%

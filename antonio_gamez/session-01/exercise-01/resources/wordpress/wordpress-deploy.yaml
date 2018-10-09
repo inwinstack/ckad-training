@@ -1,0 +1,122 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: wordpress deployment creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for wordpress
+############################ # ############################
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: wordpress-deploy
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+    stage: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+      stage: production
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        stage: production
+    spec:
+      containers:
+      - name: wordpress
+        image: bitnami/wordpress:4.9.7
+        ports:
+        - name: http-port
+          containerPort: 80
+          protocol: TCP
+        - name: https-port
+          containerPort: 443
+          protocol: TCP
+        env:
+        # - name: NAMI_LOG_LEVEL
+        #   value: trace8
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: MARIADB_HOST
+        - name: MARIADB_PORT_NUMBER
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: MARIADB_PORT_NUMBER
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_DATABASE_USER
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: WORDPRESS_DATABASE_NAME
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: WORDPRESS_BLOG_NAME
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_USERNAME
+        - name: WORDPRESS_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: WORDPRESS_EMAIL
+        - name: WORDPRESS_FIRST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: WORDPRESS_FIRST_NAME
+        - name: WORDPRESS_LAST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-cm
+              key: WORDPRESS_LAST_NAME
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_PASSWORD
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_DATABASE_PASSWORD
+        livenessProbe:
+          httpGet:
+            path: "/wp-login.php"
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 6
+        readinessProbe:
+          httpGet:
+            path: "/wp-login.php"
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 6

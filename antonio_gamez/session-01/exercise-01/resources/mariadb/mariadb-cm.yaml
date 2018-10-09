@@ -1,0 +1,20 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb configmap creation
+# Purpose: creates key/value pairs to be used in mariadb
+############################ # ############################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-cm
+  namespace: exercise-01
+  labels:
+    app: wordpress
+data:
+  MARIADB_DATABASE: k8s_wordpress
