@@ -10,92 +10,233 @@
 * Both WordPress and Drupal will use the same MySQL deployment
 * Add persistence to the three solutions using PVCs
 * Make sure that only WordPress and Drupal can access the database using NetworkPolicies
-* Add 2 Ingress rules 
+* Add 2 Ingress rules (changes to other domains are allowed)
     * myblog.com: WordPress
-    * drupal.myblog.com/drupal: Drupal
+    * drupal.k8s.governify.io/drupal: Drupal
 * Add a TLS certificate
 * Force HTTPS redirection
 
 
-
-
-
-
-
-COSAS
-
-En local, haybque crear el ingrss maniualmente dpeloy+servioce y luego uisar el mismo metadata nane, si no, no hace el mathing :S
-<!-- kind: Ingress
-metadata:
-  name: ingress -->  o no?? ya no se, quizas es que solo 
-  
-  https://cert-manager.readthedocs.io/en/latest/tutorials/acme/dns-validation.html
-
-  helm install  --name cert-manager  --namespace kube-system  stable/cert-manager
-
-
-1. .spec.updateStrategy antes no existia y el comportaiiento era otro (ondelete)
-2. 
-In Kubernetes 1.7 and later, StatefulSet’s .spec.updateStrategy field allows you to configure and disable automated rolling updates for containers, labels, resource request/limits, and annotations for the Pods in a StatefulSet.
-
-On Delete
-The OnDelete update strategy implements the legacy (1.6 and prior) behavior. When a StatefulSet’s .spec.updateStrategy.type is set to OnDelete, the StatefulSet controller will not automatically update the Pods in a StatefulSet. Users must manually delete Pods to cause the controller to create new Pods that reflect modifications made to a StatefulSet’s .spec.template.
-
-Rolling Updates
-The RollingUpdate update strategy implements automated, rolling update for the Pods in a StatefulSet. It is the default strategy when .spec.updateStrategy is left unspecified. When a StatefulSet’s .spec.updateStrategy.type is set to RollingUpdate, the StatefulSet controller will delete and recreate each Pod in the StatefulSet. It will proceed in the same order as Pod termination (from the largest ordinal to the smallest), updating each Pod one at a time. It will wait until an updated Pod is Running and Ready prior to updating its predecessor.
-
-
-
-2. dd
-3. The Headless Service provides a home for the DNS entries that the StatefulSet controller creates for each Pod that’s part of the set. Because the Headless Service is named mysql, the Pods are accessible by resolving <pod-name>.mysql from within any other Pod in the same Kubernetes cluster and namespace.
-
-The Client Service, called mysql-read, is a normal Service with its own cluster IP that distributes connections across all MySQL Pods that report being Ready. The set of potential endpoints includes the MySQL master and all slaves.
-
-Note that only read queries can use the load-balanced Client Service. Because there is only one MySQL master, clients should connect directly to the MySQL master Pod (through its DNS entry within the Headless Service) to execute writes
-
-3. The volumeMounts.subPath property can be used to specify a sub-path inside the referenced volume instead of its root.
-
-
-<!--   
 ## Steps to set up this scenario
 
-1) From this directory, run `kubectl create -f ./resources` or exec the `./commands.sh` script.
-2) Open in a browser:  http://<your_cluster_ip>:30080 or  https://<your_cluster_ip>:30443.
-    2.1) If you do know the IP, a way to retrieve it is `kubectl config view | grep server`
-3) Enjoy your new k8s-flavored Wordpress :)
+1) (Optional) If you want to replicate this scneario with your own cluster, add the the following entries to your local `host` file:
+    * <your_cluster_ip> k8s.governify.io 
+    * <your_cluster_ip> www.k8s.governify.io 
+    * <your_cluster_ip> drupal.k8s.governify.io 
+    * <your_cluster_ip> www.drupal.k8s.governify.io 
+2) From this directory, run the `./commands.sh` script.
+3) Open in a browser:  https://k8s.governify.io or  https://drupal.k8s.governify.io/drupal
+4) Enjoy your new k8s-flavored Wordpress/Drupal with Ingress and Persistence :)
+
+
+
 
 ## Remarks about the proposed solution
 
-Discussion about some non-trivial aspects of the solution and the expected goals:
+Discussion about some non-trivial aspects of the solution and the expected goals. For the sake of simplicity, all the topics already covered in previous exercises will not be discussed here.
 
->Use ConfigMaps and Secrets to configure both MariaDB and WP.
+>MariaDB Database (use StatefulSets). (tag: 10.1)
 
-Due to the dummy nature of this repository, both config and secrets files have been committed. Instructions about how to use the Bitnami's Sealsecret solution are provided as comments as part of the `commands.sh`file.
+Two different `StatefulSet` have been created: one for the master (1 replica), and 2 for the slaves.
+The `bitnami/mariadb:10.1` image requires running as a non-root container, hence a spec.securityContext has been added as follows:
+```yaml
+securityContext:
+    runAsUser: 1001
+    fsGroup: 1001
+```
+The specific MariaDB configuration is being passed through the container by mounting a `ConfigMap` as follows: 
+```yaml
+# ...
+    volumeMounts:
+    # ...
+    - name: config
+        mountPath: /opt/bitnami/mariadb/conf/my.cnf
+        subPath: my.cnf
+volumes:
+    - name: config
+    configMap:
+        name: mariadb-slave-config-cm
+```
 
-> Every container should have the proper readiness and liveness probes configured.
+It is also remarkable that `spec.updateStrategy` did not exist before K8S 1.7 for StatefulSets, so the pods were not automatically updated. If this strategy was desired, `updateStrategy: onDelete`.
 
-To address this problem, `livenessProbe` and `readinessProbe` have been used. The configuration of these object is straightforward. The only aspect differing from the default params is the `initialDelaySeconds: 120`, so that the delay while configuring database was considered.
+Regarding the services, a headless (`clusterIP: None`) service (`mariadb-slave`) has been created for the MariaDB `slave` pods, whereas the `master` has an internal ClusterIP service (`mariadb`) exposed. 
 
->Use a canary deployment for WP. Consider the version 4.9.7 as the stable WP version and use 4.9.8 in the canary deployment.
+This configuration allows making accessible by resolving `<pod-name>.mariadb-slave` from within any other Pod in the same cluster and namespace.
 
-Since each resource in this exercise defines a 3-tuple of `app=wordpress, tier=(frontend|database), stage=(production|canary)`, this goal has been addressed by creating a service that selects `app=wordpress, tier=frontend` leaving free the `stage` label. 
-In order to stick the user session, as much as possible, to the pod which responded the first, `sessionAffinity: ClientIP`is defined in the service definition.
-When using ingress, other fine-grained options are available. See https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/affinity/cookie. 
+> Both WordPress and Drupal will use the same MySQL deployment
 
-> Wordpress should be publicly available while MariaDB should only be accessible internally (you can consider your cluster supports LoadBalancer service type)
+These two services are using the same MariaDB cluster at `mariadb:3306`; since each one is configured by default to use different table prefixes, there is no conflict.
 
-In order to publicly expose the WordPress service, a LoadBalancer service type has been used. Due to the IAM restrictions, EC2 instances are not allowed to automatically provision an N/E LB. That is why it has been created manually.
-Specifically, a [Network Load Balancer](https://kubernetes.io/docs/concepts/services-networking/service/#network-load-balancer-support-on-aws-alpha) has been created and configured to forward the requests from the NLB IP to the proper clusterIP of the services.
-In the Kubernetes service, the policy `externalTrafficPolicy: Local` has been set. This means that it will never do forwarding traffic to other nodes and thereby it will preserve the original source IP address, being consistent with the `sessionAffinity: ClientIP` already set for canary deployments.
-Furthermore, note that for using the NLB (instead of the Elastic Load Balancer), an extra annotation should be included: `service.beta.kubernetes.io/aws-load-balancer-type: nlb`
+Nevertheless, this is not the optimal way to address the problem as described in the next section.
+
+> Add persistence to the three solutions using PVCs
+
+On the one hand, `StatefulSets` are using `volumeClaimTemplates` to automatically create `PersistentVolumeClaim`; on the other hand, both Wordpress and Drupal have their own `PersistentVolumeClaim`. For the sake of simplicity, all of them have been provisioned with the same size.
+
+
+Nevertheless, if our cluster is created with the feature-gate `ExpandPersistentVolumes=true` (enabled by default in k8s > 1.11) and we are using an in-tree volume plugin (`AWS-EBS, GCE-PD, Azure Disk, Azure File, Glusterfs, Cinder, Portworx, and Ceph RBD`), it is possible to resize the volumes as described in https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/. 
+
+Specifucally, the `PersistentVolumeClaim` created are as follows: 
+
+```bash
+> kubectl get pvc
+NAME                                STATUS    VOLUME      CAPCACITY  ACCESSMODE           
+mariadb-data-mariadb-master-sts-0   Bound     pvc-09fa...   4Gi        RWO 
+mariadb-data-mariadb-slave-sts-0    Bound     pvc-0c77...   4Gi        RWO
+mariadb-data-mariadb-slave-sts-1    Bound     pvc-1f63...   4Gi        RWO
+wordpress-pvc                       Bound     pvc-d76f...   4Gi        RWO
+drupal-pvc                          Bound     pvc-d739...   4Gi        RWO
+```
+
+> Make sure that only WordPress and Drupal can access the database using NetworkPolicies
+
+First, a deny-all policy default has been created. Then, we specificallly allow `WP/DP --> DB` connections, as defined in the following `NetworkPolicy` excerpt: 
+
+```yaml
+spec:
+  podSelector:
+    matchLabels:
+      tier: database
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 3306
+```
+
+> Add 2 Ingress rules: `https://<base_domain>` and `https://drupal.<base_domain>/drupal` 
+
+The cluster is supposed to have installed an `nginx-ingress-controller`, if it is not, please follow theis guide: https://kubernetes.github.io/ingress-nginx/deploy.
+
+The WordPress Ingress rule is straightforward, since it is a simple redirection to the `wordpress` in `/` path of the `<base_domain>`. Contrary, the `drupal.<base_domain>/drupal` handling is a bit tricky. 
+
+First, an Ingress rule for `/drupal` is required, but rhe traffic should be forwarded to the root path inside the application, that is the reason behind `rewrite-target: /`, as depicted below:
+
+```yaml
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  #tls: ...
+  rules:
+  - host: drupal.<base_domain>
+    http:
+      paths:
+      - path: /drupal
+        backend:
+          serviceName: drupal
+          servicePort: http
+```
+
+Next, a further rule is needed to handle the `/` traffic. The expected beavior is to redirect to the `/drupal` path, so that it can be handled by the previous rule. 
+Even if an specific annotation already exists to address this issue, an effective way is to simplily inject the nginx configuration snnipet in charge of performing the rewrite, as observed in the annotation `rewrite ^/(.*)$ /drupal/$1 redirect;` below:
+
+```yaml
+  annotations:
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(.*)$ /drupal/$1 redirect; # do the 301 redirect to /.../ -> /drupal/.../
+spec:
+  #tls: ...
+  rules:
+  - host: drupal.<base_domain>
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: drupal
+          servicePort: http
+```
+
+> Force HTTPS redirection
+
+It is simply achived by creating the following annotations:
+
+```yaml
+annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" # default true
+```
+
+However, this configuration presents problem when configuring HTTP/2, which requieres end-to-end encryption (not only end-to-reverse-proxy). 
+This behavior could be configured by installing Ingress with the flag `--enable-ssl-passthrough` and then annotating the rules with `nginx.ingress.kubernetes.io/ssl-passthrough: "true"`.
+
+
+> Add a TLS certificate
+
+A first approach to this issue would start by creating a cluster-self-signed cert for the `<base_domain>` and using it in the Ingress. However, since we are using an static IP which can be easly assigned to an A DNS record, we can leverage from a trusted CA cert provider (such as Let's Encrypt).
+
+An easy manner to face the certificate lifecycle is to use `cert-manager` (former `kube-lego`) since it can be used to obtain certificates from a CA using the ACME protocol. The ACME protocol supports various challenge mechanisms which are used to prove ownership of a domain so that a valid certificate can be issued for that domain.
+
+First, `cert-manager` should be installed by typing: `helm install  --name cert-manager  --namespace kube-system  stable/cert-manager`. Note you need to have Helm (https://helm.sh/) installed. Now, it is possible to create `Issuer` and `Certificate` API objects.
+
+First, an `Issuer` with the production ACME endpoint is created. We also define the kind of verification (DNS or HTTTP). See 
+  https://cert-manager.readthedocs.io/en/latest/tutorials/acme/dns-validation.html for more information.
+
+```yaml
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: letsencrypt-production
+  namespace: s02-exercise-01
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: <your_email>
+    privateKeySecretRef:
+      name: letsencrypt-production
+    http01: {}
+```
+
+Then, a `Certificate` is requested by the aforementioned `Issuer` for a common name (CN) and its alternative names (up to 100).
+
+```yaml
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: <base_domain>
+  namespace: s02-exercise-01
+spec:
+  secretName: <base_domain>-tls
+  issuerRef:
+    name: letsencrypt-production
+  commonName: <base_domain>
+  dnsNames:
+  - <base_domain>
+  - drupal.<base_domain>
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains:
+      - <base_domain>
+      - drupal.<base_domain>
+```
+After creating these API objects, a new certificate is going to be requested and saved as a secret with name: `<base_domain>-tls`. 
+
+In the Ingress rule definition, it is needed to specify a tls section pointing to the secret that contains the certificate. The `kubernetes.io/tls-acme: "true"` annotation enables the autorenewal of the certificates.
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+# ...
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    # ...
+spec:
+  tls:
+  - hosts:
+    - <base_domain>
+    secretName: <base_domain>-tls
+  rules:
+  # ...
+```
 
 
 ## Technical debt
   
-This scenario is *absolutely* not ready for production purposes. Specifically, there remain two major issues to be addressed:
-
-1) **Expose the service in a common 80 port**. Two alternatives here: 
-    1.1) Use **LoadBalancer** service: in order to use a LoadBalancer in AWS, we should move to an EKS cluster for that, or install the AWS addon that allows you to create ELBs on demand.
-    1.1) Use an **Ingress** controller: we have to install the Ingress addon into the cluster (e.g. nginx or HAProxy) and create the rules to forward the traffic
-
-2) **Configure SSL/TLS to secure the http traffic**. A straightforward way to do that is to generate a Let'sEncrypt free certificate and configure it in either the wordpress or the ingress service. -->
+1) Both WordPress and Drupal, for the sake of simplicity, are using the same database, sharing, thus, the same db username and password.
+A way to face this problem is to create two different databases. If the `bitnami/mariadb` had an env var to do so, the problem is quite straightforward. 
+Otherwise, we will need to create an `initcontainer` to prepopulate the `docker-entrypoint-initdb.d` with a SQL script creating both the desired databases.
