@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myblog-mariadb
+  namespace: exercise-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myblog
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: myblog
+        tier: backend
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        livenessProbe:
+          tcpSocket:
+            port: mariadb
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        env:
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_USER
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_PASSWORD
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myblog
+              key: MARIADB_ROOT_PASSWORD
+        envFrom:
+          - configMapRef:
+              name: myblog
+        ports: 
+          - name: mariadb
+            containerPort: 3306

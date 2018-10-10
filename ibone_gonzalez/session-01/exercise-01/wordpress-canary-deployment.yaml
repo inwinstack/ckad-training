@@ -1,0 +1,79 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-deployment-canary
+  namespace: exercise01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        track: canary
+    spec:
+      containers:
+        - image: bitnami/wordpress:4.9.8
+          name: wordpress
+          env:
+            - name: MARIADB_HOST
+              value: mariadb-service
+            - name: MARIADB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: MARIADB_PORT
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: password
+            - name: WORDPRESS_DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: WORDPRESS_DATABASE_USER
+            - name: WORDPRESS_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: WORDPRESS_DATABASE_NAME
+            - name: WORDPRESS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: WORDPRESS_PASSWORD
+            - name: WORDPRESS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pass-user
+                  key: password
+          ports:
+            - containerPort: 80
+              name: http-port
+            - containerPort: 443
+              name: https-port
+          livenessProbe:
+            httpGet:
+              port: 80
+              path: "/wp-login.php"
+              scheme: HTTP
+            initialDelaySeconds: 100
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              port: 80
+              path: "/wp-login.php"
+              scheme: HTTP
+            initialDelaySeconds: 100
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 5
+      restartPolicy: Always

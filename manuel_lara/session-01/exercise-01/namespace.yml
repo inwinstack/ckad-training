@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+   name: exercise-01
+   labels:
+      owner: manu
+      app: exercise-01

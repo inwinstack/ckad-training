@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myblog
+  namespace: exercise-02
+data:
+#from https://github.com/bitnami/bitnami-docker-wordpress
+#https://hub.docker.com/r/bitnami/mariadb/
+
+#Wordpress config
+  WORDPRESS_USERNAME: user
+  WORDPRESS_EMAIL: user@example.com
+  WORDPRESS_FIRST_NAME: FirstName
+  WORDPRESS_LAST_NAME: LastName
+  WORDPRESS_BLOG_NAME: Usr's blog
+
+#Wordpress mariadb config
+  WORDPRESS_DATABASE_NAME: bitnami_wordpress
+  WORDPRESS_DATABASE_USER: bn_wordpress
+
+#MariaDB Connection
+  MARIADB_DATABASE: bitnami_wordpress
+  MARIADB_USER: bn_wordpress
+  MARIADB_HOST: myblog-mariadb-master
+  MARIADB_HOST_SLAVE: myblog-mariadb-slave
+  MARIADB_PORT_NUMBER: "3306"
+
+#MariaDB replication
+  MARIADB_REPLICATION_USER: my_repl_user

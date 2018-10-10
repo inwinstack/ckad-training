@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: wordpress
+    tier: mariadb
+  name: mariadb
+  namespace: exercise-01
+spec:
+  type: ClusterIP
+  ports:
+  - name: mariadb
+    port: 3306
+  selector:
+    app: wordpress
+    tier: mariadb

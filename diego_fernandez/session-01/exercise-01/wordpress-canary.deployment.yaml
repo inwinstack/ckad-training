@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-canary
+  namespace: exercise-01
+spec:
+  revisionHistoryLimit: 2
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: wordpress
+      environment: canary
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        environment: canary
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.8
+        name: wordpress-canary
+        ports:
+        - name: http
+          containerPort: 80
+        env:
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: database-name
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: database-user
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secrets
+                key: root-password
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 30

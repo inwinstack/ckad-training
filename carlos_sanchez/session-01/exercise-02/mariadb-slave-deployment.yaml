@@ -1,0 +1,96 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    role: slave
+spec:
+  revisionHistoryLimit: 5
+  strategy:
+    # Recreate or RollingUpdate(Default)
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mariadb
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        role: slave
+    spec:
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:latest
+        ports:
+          - name: db-slave-port
+            containerPort: 3306
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "250Mi"
+          limits:
+            cpu: "50m"
+            memory: "500Mi"
+        # Environment Variables
+        env:
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_host
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_root_password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: wp_database       
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_wp_user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_wp_password
+          - name: MARIADB_REPLICATION_MODE
+            value: slave
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: replication_user           
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: replication_password
+        # LIVENESS & READINESS PROBES
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 60
+          # periodSeconds default 10 seconds
+          periodSeconds: 20
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 60
+          periodSeconds: 10

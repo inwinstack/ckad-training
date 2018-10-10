@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: exercise-01
+spec:
+  type: LoadBalancer
+  ports:
+  - name: wordpress-http
+    port: 80
+    targetPort: wordpress-http
+  - name: wordpress-https
+    port: 443
+    targetPort: wordpress-https
+  
+  selector:
+    app: wordpress
+  sessionAffinity: ClientIP
+

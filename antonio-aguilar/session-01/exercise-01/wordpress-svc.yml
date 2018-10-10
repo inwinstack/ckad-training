@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - name: wordpress
+      port: 80
+      targetPort: wp-server
+  selector:
+    app: wordpress
+    tier: frontend

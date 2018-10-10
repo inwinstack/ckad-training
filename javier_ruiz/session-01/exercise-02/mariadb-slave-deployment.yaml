@@ -1,0 +1,66 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb-slave
+spec:
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mariadb-slave
+  template:
+    metadata:
+      labels:
+        app: mariadb-slave
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb-slave
+        envFrom:
+        - configMapRef:
+            name: mariadb-slave
+        env:
+        - name: MARIADB_REPLICATION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: replication_password
+        - name: MARIADB_MASTER_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: root_password
+        ports:
+        - name: mariadb-slave
+          containerPort: 3306
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.50"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - mysqladmin status -u root -p$MARIADB_MASTER_ROOT_PASSWORD
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - mysqladmin status -u root -p$MARIADB_MASTER_ROOT_PASSWORD
+          initialDelaySeconds: 15
+          periodSeconds: 20

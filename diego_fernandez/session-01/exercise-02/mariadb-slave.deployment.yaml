@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-slave
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    role: slave
+spec:
+  revisionHistoryLimit: 2
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 40%
+  selector:
+    matchLabels:
+      app: mariadb
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        role: slave
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        ports:
+        - name: tcp
+          containerPort: 3306
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: slave
+          - name: MARIADB_REPLICATION_USER
+            value: repl_user
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secrets
+                key: repl-password
+          - name: MARIADB_MASTER_HOST
+            value: mariadb-master
+          - name: MARIADB_MASTER_ROOT_USER
+            valueFrom:
+              configMapKeyRef:
+                name: database-config
+                key: database-user
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-secrets
+                key: root-password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"

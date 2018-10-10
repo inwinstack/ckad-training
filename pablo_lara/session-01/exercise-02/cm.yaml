@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wp-configmap
+  namespace: exercise-02
+data:
+  wp-name: Pablo
+  wp-last-name: Lara
+  wp-name-blog: JiuJitsu BLOG for Exercise-02
+  wp-mariadb-host: mariadb-master

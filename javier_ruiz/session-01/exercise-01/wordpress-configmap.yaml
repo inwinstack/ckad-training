@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress
+  namespace: exercise-01
+  labels:
+    app: wordpress
+data:
+  WORDPRESS_FIRST_NAME: Javier
+  WORDPRESS_LAST_NAME: Ruiz
+  WORDPRESS_BLOG_NAME: japi's Blog

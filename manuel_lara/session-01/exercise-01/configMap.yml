@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-cm
+  namespace: exercise-01
+  labels:
+      app: exercise-01
+data:
+  mariadb_database: bitnami_wordpress
+  allow_empty_password: "yes"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-cm
+  namespace: exercise-01
+  labels:
+    app: exercise-01
+data:
+  mariadb_host: mariadb
+  mariadb_port_number: "3306"
+  wordpress_database_name: bitnami_wordpress
+  allow_empty_password: "yes"

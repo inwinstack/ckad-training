@@ -1,0 +1,58 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: myblog-mariadb-slave
+  namespace: exercise-02
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myblog
+      tier: backend
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: myblog
+        tier: backend
+        role: slave
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        livenessProbe:
+          tcpSocket:
+            port: mariadb
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        envFrom:
+          - configMapRef:
+              name: myblog
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: slave
+          - name: MARIADB_MASTER_HOST
+            value: myblog-mariadb-master
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myblog
+                key: MARIADB_REPLICATION_PASSWORD
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myblog
+                key: MARIADB_MASTER_ROOT_PASSWORD
+        ports: 
+          - name: mariadb
+            containerPort: 3306
+#        resources:
+#          requests:
+#            memory: "64Mi"
+#            cpu: "0.2"
+#          limits:
+#            memory: "128Mi"
+#            cpu: "0.3"

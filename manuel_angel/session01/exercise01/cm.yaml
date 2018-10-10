@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ex01configmap
+  namespace: exercise01
+data:
+  MARIADB_HOST: "mariadb"
+  MARIADB_PORT_NUMBER: "3306"
+  MARIADB_USER: "bn_wordpress"
+  MARIADB_DATABASE: "bitnami_wordpress"
+
+
+
+

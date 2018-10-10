@@ -1,0 +1,150 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-dp
+  namespace: exercise-02
+  labels:
+    app: exercise-02
+    tier: backend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: mariadb
+        app: exercise-02
+        tier: backend
+    spec:
+      containers:
+        - name: mariadb
+          image: bitnami/mariadb
+          env:
+            - name: MARIADB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-credentials
+                  key: user
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-credentials
+                  key: password
+            - name: MARIADB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mariadb-cm
+                  key: mariadb_database
+            - name: ALLOW_EMPTY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: mariadb-cm
+                  key: allow_empty_password
+          ports:
+            - name: tcp
+              containerPort: 3306
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "150m"
+            limits:
+              memory: "2564Mi"
+              cpu: "400m"
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 15
+            periodSeconds: 20
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-dp
+  namespace: exercise-02
+  labels:
+    app: exercise-02
+    tier: frontend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: wordpress
+        app: exercise-02
+        tier: frontend
+    spec:
+      containers:
+        - name: wordpress
+          image: bitnami/wordpress:4.9.8
+          env:
+            - name: MARIADB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: wordpress-cm
+                  key: mariadb_host
+            - name: MARIADB_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: wordpress-cm
+                  key: mariadb_port_number
+            - name: WORDPRESS_DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-credentials
+                  key: user
+            - name: WORDPRESS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-credentials
+                  key: password
+            - name: WORDPRESS_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: wordpress-cm
+                  key: wordpress_database_name
+            - name: ALLOW_EMPTY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: wordpress-cm
+                  key: allow_empty_password
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "550m"
+          # volumeMounts:
+          #   - name: hyperdb-volume
+          #     mountPath: /opt/bitnami/wordpress/wp-content/db.php
+          #   - name: hyperdb-config-volume
+          #     mountPath: /opt/bitnami/wordpress/db-config.php
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 20
+            periodSeconds: 15
+      # volumes:
+      #   - name: hyperdb-volume
+      #     configMap:
+      #       name: hyperdb-cm
+      #   - name: hyperdb-config-volume
+      #     configMap:
+      #       name: hyperdb-config-cm

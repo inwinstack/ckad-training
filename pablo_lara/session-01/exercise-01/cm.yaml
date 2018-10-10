@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wp-configmap
+  namespace: exercise-01
+data:
+  wp-name: Pablo
+  wp-last-name: Lara
+  wp-name-blog: JiuJitsu BLOG for Exercise-01
