@@ -5,29 +5,29 @@
 # ## Author: Antonio Gamez-Diaz
 # ## Contact: antoniogamez@us.es
 # #
-# # File: wordpress ingress
-# # Purpose: redirects "k8s.governify.io" to wordpress
+# # File: http://www.isa.us.es ingress
+# # Purpose: redirects "k8s.governify.io" to http://www.isa.us.es
 # ############################ # ############################
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: wordpress-ingress
+  name: antgamdiapc-ingress
   namespace: s02-exercise-01
   labels:
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true" 
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" 
+    nginx.ingress.kubernetes.io/permanent-redirect: http://www.isa.us.es
 spec:
   tls:
   - hosts:
-    - k8s.governify.io
+    - antgamdiapc.lsi.us.es
     secretName: antgamdiapc-lsi-us-es-tls
   rules:
-  - host: k8s.governify.io # k8s.governify.io: WordPress
+  - host: antgamdiapc.lsi.us.es
     http:
       paths:
       - path: /

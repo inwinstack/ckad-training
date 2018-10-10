@@ -26,10 +26,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - antgamdiapc.lsi.us.es
-    secretName: antgamdiapc-lsi-us-es-tls
+    - k8s.governify.io
+    secretName: k8s-governify-io-tls
   rules:
-  - host: drupal.myblog.com # drupal.myblog.com/drupal: drupal
+  - host: drupal.k8s.governify.io # drupal.k8s.governify.io/drupal: drupal
     http:
       paths:
       - path: /drupal # handle /drupal requests
