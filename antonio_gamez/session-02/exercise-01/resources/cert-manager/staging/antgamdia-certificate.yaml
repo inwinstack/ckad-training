@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: drupal configmap creation
-# Purpose: creates key/value pairs to be used in drupal
+# File: certificate request for "antgamdiapc.lsi.us.es" domains 
+# Purpose: requests a new cert for "antgamdiapc.lsi.us.es" related domains (using staging issuer endpoint)
 ############################ # ############################
 ---
 apiVersion: certmanager.k8s.io/v1alpha1
