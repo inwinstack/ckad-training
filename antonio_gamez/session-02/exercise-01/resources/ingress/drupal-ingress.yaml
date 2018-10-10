@@ -5,8 +5,8 @@
 # ## Author: Antonio Gamez-Diaz
 # ## Contact: antoniogamez@us.es
 # #
-# # File: drupal ingres
-# # Purpose: redirects "myblog.com" to drupal
+# # File: drupal ingress
+# # Purpose: redirects "drupal.k8s.governify.io/drupal" to drupal
 # ############################ # ############################
 ---
 apiVersion: extensions/v1beta1
@@ -21,7 +21,6 @@ metadata:
     nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true" 
-
     nginx.ingress.kubernetes.io/rewrite-target: / # forward to the internal drupal base path
 
 spec:

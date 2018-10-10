@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb headless service
-# Purpose: exposes a "mariadb" headless service internally through the kubedns
+# File: mariadb-master headless service
+# Purpose: exposes a "mariadb" service
 ############################ # ############################
 ---
 apiVersion: v1

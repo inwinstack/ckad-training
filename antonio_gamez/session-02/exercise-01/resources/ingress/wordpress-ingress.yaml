@@ -5,8 +5,8 @@
 # ## Author: Antonio Gamez-Diaz
 # ## Contact: antoniogamez@us.es
 # #
-# # File: wordpress ingres
-# # Purpose: redirects "myblog.com" to wordpress
+# # File: wordpress ingress
+# # Purpose: redirects "k8s.governify.io" to wordpress
 # ############################ # ############################
 ---
 apiVersion: extensions/v1beta1

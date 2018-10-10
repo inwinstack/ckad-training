@@ -5,8 +5,8 @@
 # ## Author: Antonio Gamez-Diaz
 # ## Contact: antoniogamez@us.es
 # #
-# # File: drupal ingres
-# # Purpose: redirects "myblog.com" to drupal
+# # File: drupal ingress
+# # Purpose: redirects "drupal.k8s.governify.io/" to /drupal with a 301 rewrite
 # ############################ # ############################
 ---
 apiVersion: extensions/v1beta1
@@ -21,16 +21,15 @@ metadata:
     nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true" 
-
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/(.*)$ /drupal/$1 redirect; # do the 301 redirect to /.../ -> /drupal/.../
 spec:
   tls:
   - hosts:
-    - antgamdiapc.lsi.us.es
-    secretName: antgamdiapc-lsi-us-es-tls
+    - k8s.governify.io
+    secretName: k8s-governify-io-tls
   rules:
-  - host: drupal.myblog.com # drupal.myblog.com/drupal: drupal
+  - host: drupal.k8s.governify.io # drupal.k8s.governify.io/drupal: drupal
     http:
       paths:
       - path: / # handle base path requests

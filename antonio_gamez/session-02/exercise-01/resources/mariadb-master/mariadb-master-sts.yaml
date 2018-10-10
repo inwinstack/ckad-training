@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: wordpress deployment creation
-# Purpose: defines the pods, replicas, liveness and readiness probes for wordpress
+# File: mariadb-master sts creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for mariadb-master
 ############################ # ############################
 ---
 apiVersion: apps/v1

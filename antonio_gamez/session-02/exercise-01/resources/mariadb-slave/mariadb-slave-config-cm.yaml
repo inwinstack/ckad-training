@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb configmap creation
-# Purpose: creates key/value pairs to be used in mariadb
+# File: mariadb-slave config creation
+# Purpose: creates my.cnf mariadb-slave config file
 ############################ # ############################
 ---
 apiVersion: v1

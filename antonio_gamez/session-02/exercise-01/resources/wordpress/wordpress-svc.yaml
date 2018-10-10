@@ -6,7 +6,7 @@
 ## Contact: antoniogamez@us.es
 #
 # File: wordpress service
-# Purpose: exposes a "wordpress" NodePort service through the kubedns
+# Purpose: exposes a "wordpress" NodePort service
 ############################ # ############################
 ---
 apiVersion: "v1"

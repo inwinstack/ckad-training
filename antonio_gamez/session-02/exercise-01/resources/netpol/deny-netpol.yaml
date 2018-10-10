@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: drupal service
-# Purpose: exposes a "drupal" NodePort service through the kubedns
+# File: NetworkPolicy to deny all connections
+# Purpose: denies all connections between pods
 ############################ # ############################
 ---
 apiVersion: networking.k8s.io/v1

@@ -5,7 +5,7 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb headless service
+# File: mariadb-slave headless service
 # Purpose: exposes a "mariadb-slave" headless service internally through the kubedns
 ############################ # ############################
 ---

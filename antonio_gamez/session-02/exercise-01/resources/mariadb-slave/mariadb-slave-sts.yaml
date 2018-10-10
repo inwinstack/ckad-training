@@ -5,8 +5,8 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: wordpress deployment creation
-# Purpose: defines the pods, replicas, liveness and readiness probes for wordpress
+# File: mariadb-slave sts creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for mariadb-slave
 ############################ # ############################
 ---
 apiVersion: apps/v1
@@ -35,20 +35,9 @@ spec:
         tier: database
         role: slave
     spec:
-      securityContext: # REVISAR PARA QUE SIRVE ESTO
+      securityContext: # executes it as user 1001  and filesystem group as 1001
         runAsUser: 1001
         fsGroup: 1001
-      # affinity: # REVISAR PARA QUE SIRVE ESTO
-      #   podAntiAffinity:
-      #     preferredDuringSchedulingIgnoredDuringExecution:
-      #     - weight: 1
-      #       podAffinityTerm:
-      #         topologyKey: kubernetes.io/hostname
-      #         labelSelector:
-      #           matchLabels:
-      #             app: mariadb
-      #             tier: database
-      #             role: slave
       containers:
       - name: mariadb
         image: bitnami/mariadb:10.1
