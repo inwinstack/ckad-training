@@ -1,0 +1,57 @@
+############################ # ############################
+## Bitnami K8S training
+## session02/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadbdump cronjob creation
+# Purpose: creates a cronjob for a periodic backup task in mariadb
+############################ # ############################
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mariadbdump-cronjob
+  namespace: s02-exercise-02
+  labels:
+    app: mariadb
+    tier: database
+spec:
+  schedule: "*/1 * * * *" # every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mariadbdump
+            image: camil/mysqldump
+            env:
+              - name: ALL_DATABASES
+                valueFrom:
+                  configMapKeyRef:
+                    name: mariadbdump-cm
+                    key: all_databases
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: mariadbdump-cm
+                    key: dbhost
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef: # from secret
+                    name: mariadbdump-secret
+                    key: dbuser
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef: # from secret
+                    name: mariadbdump-secret
+                    key: dbpass
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: mariadbdump-data
+          volumes:
+            - name: mariadbdump-data
+              persistentVolumeClaim:
+                claimName: mariadbdump-pvc
+          restartPolicy: OnFailure
