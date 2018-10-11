@@ -1,36 +1,36 @@
-############################ # ############################
-## Bitnami K8S training
-## session01/exercise02
-#
-## Author: Antonio Gamez-Diaz
-## Contact: antoniogamez@us.es
-#
-# File: certificate request for "k8s.governify.io" domains 
-# Purpose: requests a new cert for "k8s.governify.io" related domains (using staging issuer endpoint)
-############################ # ############################
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: k8s-governify-io
-  namespace: s02-exercise-01
-spec:
-  secretName: k8s-governify-io-tls
-  issuerRef:
-    name: letsencrypt-production
-  commonName: k8s.governify.io
-  dnsNames:
-  - k8s.governify.io
-  - www.k8s.governify.io
-  - drupal.k8s.governify.io
-  - www.drupal.k8s.governify.io
-  acme:
-    config:
-    - http01:
-        ingressClass: nginx
-      domains:
-      - k8s.governify.io
-      - www.k8s.governify.io
-      - drupal.k8s.governify.io
-      - www.drupal.k8s.governify.io
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session01/exercise02
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: certificate request for "k8s.governify.io" domains 
+# # Purpose: requests a new cert for "k8s.governify.io" related domains (using staging issuer endpoint)
+# ############################ # ############################
+# ---
+# apiVersion: certmanager.k8s.io/v1alpha1
+# kind: Certificate
+# metadata:
+#   name: k8s-governify-io
+#   namespace: s02-exercise-01
+# spec:
+#   secretName: k8s-governify-io-tls
+#   issuerRef:
+#     name: letsencrypt-production
+#   commonName: k8s.governify.io
+#   dnsNames:
+#   - k8s.governify.io
+#   - www.k8s.governify.io
+#   - drupal.k8s.governify.io
+#   - www.drupal.k8s.governify.io
+#   acme:
+#     config:
+#     - http01:
+#         ingressClass: nginx
+#       domains:
+#       - k8s.governify.io
+#       - www.k8s.governify.io
+#       - drupal.k8s.governify.io
+#       - www.drupal.k8s.governify.io
       

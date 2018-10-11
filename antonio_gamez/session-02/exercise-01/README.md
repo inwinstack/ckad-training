@@ -1,4 +1,4 @@
-# Deliverable antonio_gamez/session-01/exercise-01
+# Deliverable antonio_gamez/session-02/exercise-01
 ---
 
 ## Main goals
@@ -91,6 +91,10 @@ drupal-pvc                          Bound     pvc-d739...   4Gi        RWO
 
 > Make sure that only WordPress and Drupal can access the database using NetworkPolicies
 
+Initially, the version of the network technology (Weave) used in the sandbox cluster is was not compatible. To fix it we can either create a new sandbox instance or update the Weaver version by executing:
+```bash
+$ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
 First, a deny-all policy default has been created. Then, we specificallly allow `WP/DP --> DB` connections, as defined in the following `NetworkPolicy` excerpt: 
 
 ```yaml
