@@ -1,0 +1,30 @@
+############################ # ############################
+## Bitnami K8S training
+## session02/exercise03
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb-slave headless service
+# Purpose: exposes a "mariadb-slave" headless service internally through the kubedns
+############################ # ############################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-slave
+  namespace: s02-exercise-03-p01
+  labels:
+    app: mariadb
+    tier: database
+    role: slave
+spec:
+  clusterIP: None
+  ports:
+  - name: mariadb
+    port: 3306
+    targetPort: mariadb
+  selector:
+    app: mariadb
+    tier: database
+    role: slave
