@@ -29,9 +29,14 @@ kubectl create -f wordpress-svc.yaml
 kubectl create -f drupal-deployment.yaml
 kubectl create -f drupal-svc.yaml
 
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout tls.key -out tls.crt
-kubectl create secret tls sslcerts --namespace="exercise-01" --key tls.key --cert tls.crt
-echo "kubernetes   myblog.com" | sudo tee -a /etc/hosts
+mkdir -p key/wp
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout key/wp/tls.key -out key/wp/tls.crt
+kubectl create secret tls wp-sslcerts --namespace="exercise-01" --key key/wp/tls.key --cert key/wp/tls.crt
+
+mkdir -p key/dp
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=drupal.myblog.com" -keyout key/dp/tls.key -out key/dp/tls.crt
+kubectl create secret tls dp-sslcerts --namespace="exercise-01" --key key/dp/tls.key --cert key/dp/tls.crt
+
 kubectl create -f ingress.yaml
 
 
