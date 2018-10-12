@@ -13,6 +13,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: db-frontend-allow
+  namespace: s02-exercise-01
 spec:
   podSelector:
     matchLabels:
