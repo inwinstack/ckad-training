@@ -25,7 +25,7 @@ spec:
   tls:
   - hosts:
     - k8s.governify.io
-    secretName: antgamdiapc-lsi-us-es-tls
+    secretName: k8s-governify-io-tls
   rules:
   - host: k8s.governify.io # k8s.governify.io: WordPress
     http:

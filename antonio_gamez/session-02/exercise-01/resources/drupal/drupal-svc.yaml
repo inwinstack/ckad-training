@@ -6,7 +6,7 @@
 ## Contact: antoniogamez@us.es
 #
 # File: drupal service
-# Purpose: exposes a "drupal" NodePort service through the kubedns
+# Purpose: exposes a "drupal" NodePort service
 ############################ # ############################
 ---
 apiVersion: "v1"

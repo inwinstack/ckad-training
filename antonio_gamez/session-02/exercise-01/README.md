@@ -66,9 +66,8 @@ This configuration allows making accessible by resolving `<pod-name>.mariadb-sla
 
 > Both WordPress and Drupal will use the same MySQL deployment
 
-These two services are using the same MariaDB cluster at `mariadb:3306`; since each one is configured by default to use different table prefixes, there is no conflict.
-
-Nevertheless, this is not the optimal way to address the problem as described in the next section.
+These two services are using the same MariaDB cluster at `mariadb:3306`; since each one is configured by default to use different table prefixes, there is no conflict. Initially, both WordPress and Drupal, for the sake of simplicity, could use the same database, sharing, thus, the same db username and password. Since it is not a good practise, a way to face this problem is to create two different databases. Since the `bitnami/mariadb`  image have a set of env vars to do so, the solution is quite straightforward. 
+Otherwise, we will need to create an `initcontainer` to prepopulate the `docker-entrypoint-initdb.d` with a SQL script creating both the desired databases.
 
 > Add persistence to the three solutions using PVCs
 
@@ -241,6 +240,4 @@ spec:
 
 ## Technical debt
   
-1) Both WordPress and Drupal, for the sake of simplicity, are using the same database, sharing, thus, the same db username and password.
-A way to face this problem is to create two different databases. If the `bitnami/mariadb` had an env var to do so, the problem is quite straightforward. 
-Otherwise, we will need to create an `initcontainer` to prepopulate the `docker-entrypoint-initdb.d` with a SQL script creating both the desired databases.
+1) Everything can always be improved :)

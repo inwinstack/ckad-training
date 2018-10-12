@@ -102,6 +102,32 @@ spec:
             secretKeyRef: # from secret
               name: wordpress-secret
               key: WORDPRESS_DATABASE_PASSWORD
+        # DB creation by using mysql client 
+        - name: MARIADB_ROOT_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_USER
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_PASSWORD
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_DATABASE_NAME
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_DATABASE_USER
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD # create db name
+          valueFrom:
+            secretKeyRef: # from secret
+              name: wordpress-secret
+              key: WORDPRESS_DATABASE_PASSWORD
         livenessProbe:
           httpGet:
             path: "/wp-login.php"

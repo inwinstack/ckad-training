@@ -26,7 +26,7 @@ metadata:
 spec:
   tls:
   - hosts:
-    - k8s.governify.io
+    - drupal.k8s.governify.io
     secretName: k8s-governify-io-tls
   rules:
   - host: drupal.k8s.governify.io # drupal.k8s.governify.io/drupal: drupal

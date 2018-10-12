@@ -38,30 +38,6 @@ spec:
       securityContext:
         runAsUser: 1001
         fsGroup: 1001
-      initContainers:
-      - name: mariadb-entrypoint
-        image: alpine/git
-        volumeMounts:
-        # - name: mariadb-entrypoint-vol
-        #   mountPath: /docker-entrypoint-initdb.d
-        # command:  
-          # - touch /docker-entrypoint-initdb.d/drupal.sql
-          # - echo 'CREATE DATABASE drupal' > /docker-entrypoint-initdb.d/drupal.sql;
-          # - echo 'CREATE USER 'drupal_user'@'%' IDENTIFIED BY 'drupal_user_password';' >> /docker-entrypoint-initdb.d/drupal.sql;
-          # - echo 'GRANT ALL PRIVILEGES ON drupal.* TO 'drupal_user'@'%';' >> /docker-entrypoint-initdb.d/drupal.sql;
-          # - echo 'FLUSH PRIVILEGES;' >> /docker-entrypoint-initdb.d/drupal.sql;
-          # - cat /docker-entrypoint-initdb.d/drupal.sql
-        command: 
-        - git
-        - clone
-        - https://github.com/javsalgar/http-example
-        - /app
-        - touch /app/drupal.sql
-        - echo 'CREATE DATABASE drupal' > /app/drupal.sql;
-        - echo 'CREATE USER 'drupal_user'@'%' IDENTIFIED BY 'drupal_user_password';' >> /app/drupal.sql;
-        - echo 'GRANT ALL PRIVILEGES ON drupal.* TO 'drupal_user'@'%';' >> /app/drupal.sql;
-        - echo 'FLUSH PRIVILEGES;' >> /app/drupal.sql;
-        - cat /dock
       containers:
       - name: mariadb
         image: bitnami/mariadb:10.1
@@ -133,14 +109,10 @@ spec:
         - name: config
           mountPath: /opt/bitnami/mariadb/conf/my.cnf
           subPath: my.cnf
-        # - name: mariadb-entrypoint-vol
-        #   mountPath: /docker-entrypoint-initdb.d
       volumes:
         - name: config
           configMap:
             name: mariadb-master-config-cm
-        # - name: mariadb-entrypoint-vol
-        #   emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: mariadb-data

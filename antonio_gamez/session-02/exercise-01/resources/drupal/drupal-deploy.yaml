@@ -32,27 +32,7 @@ spec:
       containers:
       - name: drupal
         image: bitnami/drupal:8
-        ports:
-        - name: http
-          containerPort: 80
-          protocol: TCP
-        - name: https
-          containerPort: 443
-          protocol: TCP
-        resources: {}
         env:
-        - name: ALLOW_EMPTY_PASSWORD
-          value: "yes"
-          # valueFrom:
-          #   configMapKeyRef:
-          #     name: drupal-cm
-          #     key: ALLOW_EMPTY_PASSWORD
-        - name: WORDPRESS_DATABASE_PASSWORD
-          value: dbuser_password
-          # valueFrom:
-          #   configMapKeyRef:
-          #     name: drupal-cm
-          #     key: ALLOW_EMPTY_PASSWORD
         - name: MARIADB_HOST
           valueFrom:
             configMapKeyRef:
@@ -98,6 +78,32 @@ spec:
             configMapKeyRef:
               name: drupal-cm
               key: DRUPAL_EMAIL
+        # DB creation by using mysql client 
+        - name: MARIADB_ROOT_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_USER
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: mariadb-master-secret
+              key: MARIADB_ROOT_PASSWORD
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: drupal-secret
+              key: DRUPAL_DATABASE_NAME
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: drupal-secret
+              key: DRUPAL_DATABASE_USER
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD # create db name
+          valueFrom:
+            secretKeyRef: # from secret
+              name: drupal-secret
+              key: DRUPAL_DATABASE_PASSWORD
         ports:
         - name: http
           containerPort: 80
@@ -123,7 +129,6 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           failureThreshold: 6
-        resources: {} # empty by now
         volumeMounts:
           - mountPath: /bitnami/drupal
             name: drupal-data
