@@ -26,10 +26,10 @@ spec:
     protocol: TCP
     port: 80
     targetPort: http
-    nodePort: 31081
+    nodePort: 30081
   - name: https
     protocol: TCP
     port: 443
     targetPort: https
-    nodePort: 31444
+    nodePort: 30444
   type: NodePort

@@ -40,12 +40,6 @@ spec:
           containerPort: 443
           protocol: TCP
         resources: {}
-            # requests:
-            #   memory: "256m"
-            #   cpu: "250m"
-            # limits:
-            #   memory: "512Mi"
-            #   cpu: "500m"
         env:
         - name: MARIADB_HOST
           valueFrom:

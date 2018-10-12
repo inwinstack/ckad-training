@@ -35,7 +35,6 @@ spec:
           volumeMounts:
           - name: wordpress-bitnami-shared
             mountPath: /bitnami
-            # subPath: docker-entrypoint-initdb.d
           command:  # The folder `/bitnami/` needs an empty file called `/bitnami/.troll`. 
             - sh
             - '-c'
@@ -51,12 +50,6 @@ spec:
           containerPort: 443
           protocol: TCP
         resources: {}
-            # requests:
-            #   memory: "256m"
-            #   cpu: "250m"
-            # limits:
-            #   memory: "512Mi"
-            #   cpu: "500m"
         env:
         - name: MARIADB_HOST
           valueFrom:
