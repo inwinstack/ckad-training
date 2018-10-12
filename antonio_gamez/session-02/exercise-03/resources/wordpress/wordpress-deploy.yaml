@@ -33,12 +33,13 @@ spec:
         - name: mariadb-entrypoint
           image: busybox
           volumeMounts:
-          - name: wordpress-bitnami-shared
-            mountPath: /bitnami
+          - name: wordpress-data
+            mountPath: /wordpress
+            subPath: wordpress
           command:  # The folder `/bitnami/` needs an empty file called `/bitnami/.troll`. 
             - sh
             - '-c'
-            - touch /bitnami/.troll
+            - touch /wordpress/.troll
       containers:
       - name: wordpress
         image: javsalgar/wordpress:faulty # the best image in all over the world
@@ -141,7 +142,7 @@ spec:
           subPath: wp-content
       # Sidecar socat adapter
       - name: wordpress-socat
-        image: bitnami/minideb
+        image: alpine/socat
         command: 
         - sh
         - -c
