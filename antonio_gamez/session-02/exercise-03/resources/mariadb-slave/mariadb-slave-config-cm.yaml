@@ -5,19 +5,19 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb-master config creation
-# Purpose: creates my.cnf mariadb-master config file
+# File: mariadb-slave config creation
+# Purpose: creates my.cnf mariadb-slave config file
 ############################ # ############################
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mariadb-master-config-cm
-  namespace: s02-exercise-03-p01
+  name: mariadb-slave-config-cm
+  namespace: s02-exercise-03
   labels:
     app: mariadb
     tier: database
-    role: master
+    role: slave
 data:
   my.cnf: |-
     [mysqld]
@@ -38,7 +38,7 @@ data:
     port=3306
     socket=/opt/bitnami/mariadb/tmp/mysql.sock
     default-character-set=UTF8
-    
+
     [manager]
     port=3306
     socket=/opt/bitnami/mariadb/tmp/mysql.sock

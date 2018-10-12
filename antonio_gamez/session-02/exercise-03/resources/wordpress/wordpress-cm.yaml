@@ -1,6 +1,6 @@
 ############################ # ############################
 ## Bitnami K8S training
-## session01/exercise03-p01
+## session01/exercise03
 #
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
@@ -13,7 +13,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: wordpress-cm
-  namespace: s02-exercise-03-p01
+  namespace: s02-exercise-03
   labels:
     app: wordpress
     tier: frontend
@@ -21,7 +21,7 @@ data:
   MARIADB_HOST: mariadb
   MARIADB_PORT_NUMBER: "3306"
   
-  WORDPRESS_BLOG_NAME: K8S training - s02-exercise-03-p01
+  WORDPRESS_BLOG_NAME: K8S training - s02-exercise-03
   WORDPRESS_EMAIL: antonio@example.com
   WORDPRESS_FIRST_NAME: Antonio
   WORDPRESS_LAST_NAME: Kubernetes

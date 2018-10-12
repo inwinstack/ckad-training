@@ -5,21 +5,20 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb-slave headless service
-# Purpose: exposes a "mariadb-slave" headless service internally through the kubedns
+# File: mariadb-master headless service
+# Purpose: exposes a "mariadb" service
 ############################ # ############################
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mariadb-slave
-  namespace: s02-exercise-03-p01
+  name: mariadb
+  namespace: s02-exercise-03
   labels:
     app: mariadb
     tier: database
-    role: slave
+    role: master
 spec:
-  clusterIP: None
   ports:
   - name: mariadb
     port: 3306
@@ -27,4 +26,4 @@ spec:
   selector:
     app: mariadb
     tier: database
-    role: slave
+    role: master

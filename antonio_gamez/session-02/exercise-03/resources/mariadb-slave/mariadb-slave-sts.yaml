@@ -13,7 +13,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mariadb-slave-sts
-  namespace: s02-exercise-03-p02
+  namespace: s02-exercise-03
   labels:
     app: mariadb
     tier: database

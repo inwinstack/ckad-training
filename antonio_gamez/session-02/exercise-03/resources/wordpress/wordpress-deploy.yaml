@@ -1,6 +1,6 @@
 ############################ # ############################
 ## Bitnami K8S training
-## session01/exercise03-p02
+## session01/exercise03
 #
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
@@ -13,7 +13,7 @@ kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
   name: wordpress-deploy
-  namespace: s02-exercise-03-p02
+  namespace: s02-exercise-03
   labels:
     app: wordpress
     tier: frontend
@@ -136,12 +136,68 @@ spec:
         - mountPath: /bitnami/php
           name: wordpress-data
           subPath: php
-        - mountPath: /bitnami
-          name: wordpress-bitnami-shared
-          subPath: bitnami
+        - mountPath: /bitnami/wordpress/wp-content
+          name: wordpress-backupper-shared
+          subPath: wp-content
+      # Sidecar socat adapter
+      - name: wordpress-socat
+        image: bitnami/minideb
+        command: 
+        - sh
+        - -c
+        - socat tcp-l:3306,fork,reuseaddr tcp:mariadb:3306 # listen localhost:3306, forward to mariadb:3306
+      # Sidecar backupper
+      - name: wordpress-backupper
+        image: sburnicki/debian-ssh-rsync-curl
+        volumeMounts:
+        - name: wordpress-backupper-data
+          mountPath: /wordpress-backupper-data
+          subPath: wordpress-backupper-data
+        - name: wordpress-backupper-shared
+          mountPath: /wp-content
+          subPath: wp-content
+        command: 
+        - sh
+        - -c
+        - |
+          URL_CHECK='http://wordpress/wp-login.php';
+          CHECK_INTERVAL='10m';
+          i=0;
+          while true; do
+              echo "Checking WordPress state before performing backup of wp-content folder...";
+              echo "Using '$URL_CHECK' endpoint. Waiting '$CHECK_INTERVAL'. Iteration: $i";
+              if curl --fail -insecure -XGET -m10 $URL_CHECK &>/dev/null; then
+                  echo "The service is ready";
+                  echo "---------"
+
+                  echo "du -sh /wordpress-backupper-dat";
+                  du -sh /wordpress-backupper-data;
+                  echo "---------"
+
+                  echo "du -sh /wp-content";
+                  du -sh /wp-content
+                  echo "---------"
+                  
+                  if rsync -av /wp-content /wordpress-backupper-data &>/dev/null; then
+                      echo "Transfer OK";
+                      echo "#############################################################";
+                  else
+                      echo "Transfer not OK";
+                      echo "#############################################################";
+                  fi
+              else
+                  echo "The service is not ready yet"
+                  echo "#############################################################";
+              fi;
+              i=$(( $i + 1 ))
+              sleep $CHECK_INTERVAL;
+          done;
       volumes:
         - name: wordpress-data
           persistentVolumeClaim:
             claimName: wordpress-pvc
-        - name: wordpress-bitnami-shared
+        - name: wordpress-backupper-data
+          persistentVolumeClaim:
+            claimName: wordpress-backupper-pvc
+        - name: wordpress-backupper-shared
           emptyDir: {}

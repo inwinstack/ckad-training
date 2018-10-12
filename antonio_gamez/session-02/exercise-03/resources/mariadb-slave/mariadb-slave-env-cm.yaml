@@ -5,21 +5,23 @@
 ## Author: Antonio Gamez-Diaz
 ## Contact: antoniogamez@us.es
 #
-# File: mariadb-master configmap creation
-# Purpose: creates key/value pairs to be used in mariadb-master
+# File: mariadb-slave configmap creation
+# Purpose: creates key/value pairs to be used in mariadb
 ############################ # ############################
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mariadb-master-env-cm
-  namespace: s02-exercise-03-p02
+  name: mariadb-slave-env-cm
+  namespace: s02-exercise-03
   labels:
     app: mariadb
     tier: database
-    role: master
+    role: slave
 data:
   MARIADB_USER: dbuser
   MARIADB_DATABASE: database
-  MARIADB_REPLICATION_MODE: master
+  MARIADB_REPLICATION_MODE: slave
   MARIADB_REPLICATION_USER: replication-user
+  MARIADB_MASTER_HOST: mariadb
+  MARIADB_MASTER_ROOT_PORT: "3306"
