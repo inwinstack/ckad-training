@@ -33,12 +33,16 @@ kubectl create --save-config -f wordpress-svc.yaml
 kubectl create --save-config -f drupal-deployment.yaml
 kubectl create --save-config -f drupal-svc.yaml
 
-mkdir -p key/wp
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout key/wp/tls.key -out key/wp/tls.crt
+if [ ! -d "key/wp" ]; then
+    mkdir -p key/wp
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=myblog.com" -keyout key/wp/tls.key -out key/wp/tls.crt
+fi
 kubectl create secret tls wp-sslcerts --namespace="exercise-01" --key key/wp/tls.key --cert key/wp/tls.crt
 
-mkdir -p key/dp
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=drupal.myblog.com" -keyout key/dp/tls.key -out key/dp/tls.crt
+if [ ! -d "key/dp" ]; then
+    mkdir -p key/dp
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=drupal.myblog.com" -keyout key/dp/tls.key -out key/dp/tls.crt
+fi
 kubectl create secret tls dp-sslcerts --namespace="exercise-01" --key key/dp/tls.key --cert key/dp/tls.crt
 
 kubectl create --save-config -f ingress.yaml
