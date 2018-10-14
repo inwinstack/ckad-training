@@ -1,5 +1,5 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: mariadb
   namespace: exercise-01
@@ -7,20 +7,19 @@ metadata:
     app: mariadb
     tier: backend
 spec:
-  revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
   replicas: 1
   selector:
     matchLabels:
       app: mariadb
       tier: backend
+  serviceName: mariadb
   template:
     metadata:
       labels:
         app: mariadb
         tier: backend
     spec:
+      terminationGracePeriodSeconds: 10
       securityContext:
         runAsUser: 1001
         fsGroup: 1001
@@ -71,7 +70,16 @@ spec:
             command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
           initialDelaySeconds: 15
           periodSeconds: 5
-      volumes:
-      - name: mariadb-data
-        persistentVolumeClaim:
-          claimName: mariadb-pvc
+  volumeClaimTemplates:
+  - metadata:
+      name: mariadb-data
+      namespace: exercise-01
+      labels:
+        app: wordpress
+        type: backend
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi

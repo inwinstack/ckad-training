@@ -9,8 +9,6 @@ metadata:
     release: production
 spec:
   revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
   replicas: 1
   selector:
     matchLabels:
