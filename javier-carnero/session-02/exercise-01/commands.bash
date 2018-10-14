@@ -24,6 +24,8 @@ kubectl create --save-config -f mariadb-pvc.yaml
 kubectl create --save-config -f wordpress-pvc.yaml
 kubectl create --save-config -f drupal-pvc.yaml
 
+kubectl create --save-config -f mariadb-np.yaml
+
 kubectl create --save-config -f mariadb-deployment.yaml
 kubectl create --save-config -f mariadb-svc.yaml
 
