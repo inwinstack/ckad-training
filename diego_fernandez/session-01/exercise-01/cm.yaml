@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+  namespace: exercise-01
+data:
+  database-name: "k8s_training"
+  database-user: "wp_user"

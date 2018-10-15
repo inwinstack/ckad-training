@@ -1,0 +1,72 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-exercise-01
+  namespace: exercise-01
+spec:
+  revisionHistoryLimit: 5
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        type: stable
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.7
+        name: wordpress-container
+        ports:
+        - name: http-port
+          containerPort: 80
+        # LIVENESS & READNESS
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          timeoutSeconds: 20
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          timeoutSeconds: 20
+        # ENVS
+        env:
+        # From Secret
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: exercise-01-secret
+              key: mariadb_root_password
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: exercise-01-secret
+              key: mariadb_password
+        # From ConfigMap
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: mariadb_host
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: wordpress_blog_name
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: mariadb_user
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: exercise-01-config
+              key: mariadb_database

@@ -1,0 +1,103 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-canary
+  namespace: exercise-01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        track: canary
+    spec:
+      containers:
+      - name: wordpress
+        image: bitnami/wordpress:4.9.8
+        env:
+        - name: MARIADB_HOST
+          value: "mariadb"
+        - name: MARIADB_PORT_NUMBER
+          value: "3306"
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: database-name
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: database-user
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: database-password
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secret
+              key: user
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress-secret
+              key: password
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-configmap
+              key: blog-name
+        - name: WORDPRESS_FIRST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-configmap
+              key: admin-first-name
+        - name: WORDPRESS_LAST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress-configmap
+              key: admin-last-name
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        livenessProbe:
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+          httpGet:
+            path: /wp-login.php
+            port: http
+        readinessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+          successThreshold: 1
+          httpGet:
+            path: /wp-login.php
+            port: http
+        volumeMounts:
+        - mountPath: /bitnami/apache
+          name: wordpress-data
+          subPath: apache
+        - mountPath: /bitnami/wordpress
+          name: wordpress-data
+          subPath: wordpress
+        - mountPath: /bitnami/php
+          name: wordpress-data
+          subPath: php
+      volumes:
+      - name: wordpress-data
+        emptyDir: {}

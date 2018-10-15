@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadbslave
+  namespace: exercise02
+  labels: 
+    app: mariadb
+    component: "slave"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+      component: "slave"
+  template:
+    metadata: 
+      labels:
+        app: mariadb  
+        component: "slave"
+    spec:
+      containers:
+      - image: bitnami/mariadb:latest
+        name: mariadb
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 5
+        env:
+          - name: ALLOW_EMPTY_PASSWORD 
+            value: "yes"
+          - name: MARIADB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: ex02configmap
+                key: MARIADB_USER
+          - name: MARIADB_DATABASE 
+            valueFrom:
+              configMapKeyRef:
+                name: ex02configmap
+                key: MARIADB_DATABASE  
+          - name: MARIADB_REPLICATION_MODE
+            value: "slave"
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: ex02configmap
+                key: MARIADB_HOST
+          - name: MARIADB_MASTER_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: ex02configmap
+                key: MARIADB_PORT_NUMBER
+          - name: MARIADB_MASTER_ROOT_USER
+            value: "root"
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ex02secret
+                key: MARIADB_MASTER_ROOT_PASSWORD
+          - name: MARIADB_REPLICATION_USER
+            value: "replicator"
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ex02secret
+                key: MARIADB_REPLICATION_PASSWORD
+        ports: 
+          - name: mariadbport
+            containerPort: 3306
+
+      # MARIADB_DATABASE=my_database

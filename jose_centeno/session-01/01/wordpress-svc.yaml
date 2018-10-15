@@ -1,0 +1,21 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: myblog-wordpress
+  namespace: exercise-01
+  labels:
+    app: myblog
+    tier: frontend
+spec:
+#  type: NodePort
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: http
+  selector:
+    app: myblog
+    tier: frontend
+  sessionAffinity: ClientIP
+  sessionAffinityConfig: 
+    clientIP: 
+      timeoutSeconds: 300

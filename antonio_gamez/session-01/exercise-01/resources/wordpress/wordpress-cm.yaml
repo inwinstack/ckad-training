@@ -1,0 +1,29 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: wordpress configmap creation
+# Purpose: creates key/value pairs to be used in wordpress
+############################ # ############################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-cm
+  namespace: exercise-01
+  labels:
+    app: wordpress
+data:
+  MARIADB_HOST: mariadb
+  MARIADB_PORT_NUMBER: "3306"
+  
+  WORDPRESS_DATABASE_NAME: k8s_wordpress
+
+  WORDPRESS_BLOG_NAME: K8S training - 1st round
+  WORDPRESS_BLOG_NAME_CANARY: K8S (Canary) training - 1st round
+  WORDPRESS_EMAIL: antonio@example.com
+  WORDPRESS_FIRST_NAME: Antonio
+  WORDPRESS_LAST_NAME: Kubernetes

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb
+  namespace: exercise-02
+data:
+  maria-user: bn_wordpress
+  database-name: bitnami_wordpress
+  replic-user: bitnami_user

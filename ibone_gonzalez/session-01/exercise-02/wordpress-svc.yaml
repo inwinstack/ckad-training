@@ -1,0 +1,14 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: wordpress-service
+  namespace: exercise02
+spec:
+  type: NodePort
+  ports:
+    - name: "http-host"
+      port: 80
+      targetPort: http
+  selector:
+    app: wordpress02
+    tier: frontend

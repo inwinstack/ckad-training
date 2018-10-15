@@ -1,0 +1,26 @@
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session01/exercise02
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: wordpress pv claim creation
+# # Purpose: allocates some persistence
+# ############################ # ############################
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: mariadb-pvc
+#   namespace: exercise-02
+#   labels:
+#     app: wordpress
+#     tier: frontend
+#     stage: production
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi

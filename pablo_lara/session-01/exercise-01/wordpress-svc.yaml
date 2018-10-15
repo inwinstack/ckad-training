@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-svc
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: http-wp
+      nodePort: 32500
+  selector:
+    app: wordpress
+    tier: frontend

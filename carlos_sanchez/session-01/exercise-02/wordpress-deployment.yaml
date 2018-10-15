@@ -1,0 +1,86 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  revisionHistoryLimit: 5
+  strategy:
+    # Recreate or RollingUpdate(Default)
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - name: wordpress
+        image: bitnami/wordpress:4.9.8
+        ports:
+        - name: http-server
+          containerPort: 80
+        resources:
+          requests:
+            cpu: "40m"
+            memory: "250Mi"
+          limits:
+            cpu: "80m"
+            memory: "500Mi"
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_host
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: wp_database
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_wp_user
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: mariadb_wp_password
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: wp_user
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: exercise-02-secrets
+                key: wp_password
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: exercise-02-config
+                key: wordpress_blog_name
+        # LIVENESS & READNESS
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 300
+          timeoutSeconds: 20
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 300
+          timeoutSeconds: 20

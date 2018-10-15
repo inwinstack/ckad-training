@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 40%
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: bitnami/wordpress:latest
+        livenessProbe:
+            initialDelaySeconds: 160
+            periodSeconds: 30
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+        readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+        name: wordpress
+        ports:
+        - name: http-port
+          containerPort: 80
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-mariadb-host
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: mariadb-database-password
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: username-wp
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: password-wp
+          - name: WORDPRESS_FIRST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name
+          - name: WORDPRESS_LAST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-last-name
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name-blog

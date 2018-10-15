@@ -1,0 +1,67 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: exercise02
+  labels:
+    app: wordpress
+spec:
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        version: stable
+    spec:
+      containers:
+      - image: bitnami/wordpress:4.9.7
+        name: wordpress
+        livenessProbe:
+          httpGet:
+            path: /wp-login.php
+            port: http
+          initialDelaySeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /wp-login.php
+            port: http
+          initialDelaySeconds: 15
+        env: 
+          - name: ALLOW_EMPTY_PASSWORD
+            value: "yes"
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: ex01configmap
+                key: MARIADB_HOST
+          - name: MARIADB_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: ex01configmap
+                key: MARIADB_PORT_NUMBER
+          - name: WORDPRESS_DATABASE_USER
+            valueFrom:
+              configMapKeyRef:
+                name: ex01configmap
+                key: MARIADB_USER
+          - name: WORDPRESS_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: ex01configmap
+                key: MARIADB_DATABASE   
+        ports:
+          - name: http
+            containerPort: 80
+
+
+
+
+
+

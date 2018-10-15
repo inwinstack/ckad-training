@@ -1,0 +1,29 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: mariadb service
+# Purpose: exposes a "mariadb" ClusterIP service internally through the kubedns
+############################ # ############################
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: database
+    stage: production
+spec:
+  selector:
+    app: wordpress
+    tier: database
+    stage: production
+  ports:
+    - port: 3306
+      targetPort: db-port
+  type: ClusterIP 

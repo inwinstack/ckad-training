@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: mariadb
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: mariadb
+      port: 3306
+      targetPort: mariadb-server
+  selector:
+    app: mariadb
+    tier: backend

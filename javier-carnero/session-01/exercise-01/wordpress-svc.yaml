@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 7200
+  ports:
+    - name: frontend
+      port: 80
+      targetPort: http-server
+  selector:
+    app: wordpress
+    tier: frontend
