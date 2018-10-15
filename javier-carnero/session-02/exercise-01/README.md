@@ -13,7 +13,7 @@ Kubernetes exercise deploying a Wordpress and Drupal instances connected to an i
 * Only WordPress and Drupal can access the database using NetworkPolicies
 * 2 Ingress rules
     * myblog.com: WordPress
-    * drupal.myblog.com/drupal: Drupal
+    * drupal.myblog.com: Drupal [TODO: /drupal]
 * TLS certificate
 * [TODO] Force HTTPS redirection
 
