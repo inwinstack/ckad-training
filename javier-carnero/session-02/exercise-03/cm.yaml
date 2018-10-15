@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: exercise-03
+data:
+  mariadb-host: mysql
+  blog-name: JCarnero's K8s CKAD Training

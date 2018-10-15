@@ -1,6 +1,6 @@
 # S02 Exercise II Solution
 
-Kubernetes exercise deploying a Wordpress and Drupal instances connected to an instance of MariaDB.
+Kubernetes exercise deploying a Wordpress instance connected to an instance of MariaDB.
 
 ## What's implemented
 

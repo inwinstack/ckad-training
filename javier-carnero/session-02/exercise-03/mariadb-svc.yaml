@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: exercise-03
+  labels:
+    app: mariadb
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+  selector:
+    app: mariadb
+    tier: backend
