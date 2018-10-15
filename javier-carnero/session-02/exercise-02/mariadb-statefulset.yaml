@@ -75,7 +75,7 @@ spec:
       name: mariadb-data
       namespace: exercise-02
       labels:
-        app: wordpress
+        app: mariadb
         type: backend
     spec:
       accessModes:

@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mariadb-backup
+  namespace: exercise-02
+  labels:
+    app: mariadb-backup
+    tier: backend
+    release: production
+spec:
+  template:
+    metadata:
+      labels:
+        app: mariadb-backup
+        tier: backend
+        release: production
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:10.1
+        command:
+        - "/bin/bash"
+        - "-c"
+        - |
+          mysqldump -h$BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASSWORD $BACKUP_DATABASE > /bitnami/mariadb-backup/latest.sql
+        volumeMounts:
+        - mountPath: /bitnami/mariadb-backup
+          name: mariadb-backup
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "250Mi"
+          limits:
+            cpu: "50m"
+            memory: "500Mi"
+        env:
+          - name: BACKUP_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: frontend-config
+                key: mariadb-host
+          - name: BACKUP_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-dbname
+          - name: BACKUP_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-user
+          - name: BACKUP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-password
+      restartPolicy: Never
+      volumes:
+      - name: mariadb-backup
+        persistentVolumeClaim:
+          claimName: mariadb-backup
+  backoffLimit: 4

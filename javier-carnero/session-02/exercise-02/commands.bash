@@ -15,6 +15,7 @@ kubectl create secret generic wp-credentials -n exercise-02 \
 --from-literal=password=training
 
 kubectl create --save-config -f wordpress-pvc.yaml
+kubectl create --save-config -f backup-pvc.yaml
 
 kubectl create --save-config -f mariadb-np.yaml
 

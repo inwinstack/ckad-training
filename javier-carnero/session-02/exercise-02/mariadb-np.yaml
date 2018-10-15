@@ -19,8 +19,8 @@ spec:
           release: production
     - podSelector:
         matchLabels:
-          app: backup
-          tier: frontend
+          app: mariadb-backup
+          tier: backend
           release: production
     ports:
     - protocol: TCP
