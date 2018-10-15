@@ -4,7 +4,7 @@ Kubernetes exercise deploying a Wordpress and Drupal instances connected to an i
 
 ## What's implemented
 
-* Job for backing up a WordPress Database.
+* Job for backing up a WordPress Database (each minute).
 * It uses a volume for the backup.
 * It uses mysqldump command.
 

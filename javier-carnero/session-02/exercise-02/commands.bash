@@ -34,6 +34,7 @@ kubectl create secret tls wp-sslcerts --namespace="exercise-02" --key key/wp/tls
 
 kubectl create --save-config -f ingress.yaml
 
+kubectl create -f backup-cronjob.yaml
 
 # Access via browser to:
 echo ""
