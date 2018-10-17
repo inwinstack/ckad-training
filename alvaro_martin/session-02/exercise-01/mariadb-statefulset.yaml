@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: "exercise-01"
+# From here it's a RS
+spec:
+  selector:
+    matchLabels:
+      app: mariadb # has to match .spec.template.metadata.labels
+  serviceName: "mariadb"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: mariadb # has to match .spec.selector.matchLabels
+# From here, it's a POD
+    spec:
+# To solve the non-root permission problem
+# From: https://engineering.bitnami.com/articles/running-non-root-containers-on-openshift.html
+      initContainers:
+      - name: volume-permissions
+        image: busybox
+        command: ['sh', '-c', 'chmod -R g+rwX /bitnami']
+        volumeMounts:
+        - mountPath: /bitnami/mariadb
+          name: mariadb-vol
+# Everything else
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:10.1
+        ports:
+          - containerPort: 3306
+            name: mysql
+        volumeMounts:
+        - name: mariadb-vol
+          mountPath: /bitnami/mariadb
+        env:
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: rootpass
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: maria-user
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: userpass
+        - name: MARIADB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mariadb
+              key: database-name
+      volumes:
+        - name: mariadb-vol
+          persistentVolumeClaim:
+            claimName: mariadb-pvc

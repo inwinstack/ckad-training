@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mariadb-frontend-allow
+spec:
+  podSelector:
+    matchLabels:
+      # Destination pods
+      app: mariadb
+  ingress:
+    - from:
+      # Source pods allowed to access. Our apps are configured with 'uses' label
+      - podSelector:
+          matchLabels:
+            uses: mariadb
+      ports:
+        - protocol: TCP
+          port: 3306

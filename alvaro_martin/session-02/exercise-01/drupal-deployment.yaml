@@ -1,0 +1,74 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: drupal
+  namespace: "exercise-01"
+  labels:
+    app: drupal
+    uses: mariadb
+# From here it's a RS
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal
+  template:
+    metadata:
+      labels:
+        app: drupal
+# From here, it's a POD
+    spec:
+      containers:
+      - image: bitnami/drupal:latest
+        name: drupal
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        volumeMounts:
+        - name: drupal-vol
+          mountPath: /bitnami/drupal
+        env:
+        - name: DRUPAL_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: drupal
+              key: db-pass
+        - name: DRUPAL_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: drupal
+              key: database-name
+        - name: DRUPAL_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: drupal
+              key: db-user
+# This is for setting up the database in mariadb
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: drupal
+              key: db-root-pass
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: drupal
+              key: database-name
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: drupal
+              key: db-user
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: drupal
+              key: db-pass
+      volumes:
+        - name: drupal-vol
+          persistentVolumeClaim:
+            claimName: drupal-pvc
