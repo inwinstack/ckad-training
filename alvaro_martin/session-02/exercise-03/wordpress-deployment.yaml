@@ -1,0 +1,121 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: "exercise-03"
+  labels:
+    app: wordpress
+    uses: mariadb
+# From here it's a RS
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+# From here, it's a POD
+    spec:
+      # To solve /bitnami/.troll file problem
+      initContainers:
+      - name: troll-fixer
+        image: busybox
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          mkdir /bitnami/wordpress;
+          touch /bitnami/wordpress/.troll;
+        volumeMounts:
+        - mountPath: /bitnami/wordpress
+          name: wordpress-vol
+      containers:
+        # Regular wordpress container (faulty)
+      - image: javsalgar/wordpress:faulty
+        name: wordpress
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        env:
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: wp-blogname
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: wp-username
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: wp-password
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: dbpass
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: database
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: wordpress
+              key: db-user
+        volumeMounts:
+        - name: wordpress-vol
+          mountPath: /bitnami/wordpress
+        # Backup container
+      - image: busybox
+        name: backup
+# Busybox multiline command example
+# https://github.com/infrabricks/kubernetes-standalone/blob/master/examples/busybox.yml
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          if [ ! -d /backups/wp-backup ]; then
+            mkdir /backups/wp-backup
+          fi
+          while true; do
+            if wget -q --spider http://wordpress/wp-login.php; then
+              echo "WordPress: ready";
+              cp -af /bitnami/wordpress/wp-content /backups/wp-backup;
+              echo "Backup: done";
+            else
+              echo "Wordpress is not ready yet!";
+            fi
+            sleep 600;
+          done;
+        volumeMounts:
+        - name: wordpress-vol
+          mountPath: /bitnami/wordpress
+        - name: backup-vol
+          mountPath: /backups
+        # Connection solver - socat
+      - image: alpine/socat
+        name: forwarding
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          socat tcp-l:3306,fork,reuseaddr tcp:mariadb:3306
+        # listen localhost:3306, forward to mariadb:3306
+      volumes:
+        - name: wordpress-vol
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
+        - name: backup-vol
+          persistentVolumeClaim:
+            claimName: backup-pvc
