@@ -1,0 +1,56 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mysqldump
+  namespace: "exercise-02"
+spec:
+  schedule: "*/1 * * * *" #"0 0 * * * "
+  jobTemplate:
+    spec:
+      template:
+# From here, it's a POD
+        spec:
+          containers:
+          - image: bitnami/mysql
+            name: mysqldump
+            args:
+            - /bin/sh
+            - -c
+            - mysqldump -hmariadb -u$MARIADB_USER -p$MARIADB_PASSWORD $WORDPRESS_DATABASE_NAME
+              > /bitnami/mariadb/wordpress-$(date +%F).sql;
+              echo 'Resultado:';
+              echo $(ls -lR /bitnami/mariadb/)
+            volumeMounts:
+            - name: mysqldump-vol
+              mountPath: /bitnami/mariadb
+# To solve the non-root permission problem
+# From: https://engineering.bitnami.com/articles/running-non-root-containers-on-openshift.html
+          initContainers:
+          - name: volume-permissions
+            image: busybox
+            command: ['sh', '-c', 'chmod -R g+rwX /bitnami']
+            volumeMounts:
+            - mountPath: /bitnami/mariadb
+              name: mysqldump-vol
+# Environment vars
+            env:
+            - name: WORDPRESS_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: wordpress
+                  key: database
+            - name: MARIADB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: maria-user
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb
+                  key: userpass
+          restartPolicy: OnFailure
+          volumes:
+            - name: mysqldump-vol
+              persistentVolumeClaim:
+                claimName: mysqldump-pvc
