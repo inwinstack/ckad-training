@@ -12,7 +12,7 @@ spec:
     metadata:
       labels:
         app: wordpress02
-        tier: frontend
+        type: frontend
         track: stable
     spec:
       containers:

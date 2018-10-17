@@ -8,12 +8,12 @@ spec:
   selector:
     matchLabels:
       app: wordpress01
-      tier: backend
+      type: backend
   template:
     metadata:
       labels:
         app: wordpress01
-        tier: backend
+        type: backend
     # ...
     spec:
       containers:

@@ -1,0 +1,48 @@
+# Job mysqldump
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: mysqldump
+  namespace: exercise02
+  labels:
+    app: mariadb
+    type: database
+spec:
+  # period in which the job is executed
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            role: mysqldump
+          containers:
+            - name: mysqldump
+              image: camil/mysqldump
+              env:
+                - name: ALL_DATABASES
+                  valueFrom:
+                    configMapKeyRef:
+                      name: job-cm
+                      key: ALL_DATABASES
+                - name: DB_HOST
+                  value: mariadb-svc
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: exercise02-config
+                      key: MARIADB_USER
+                - name: DB_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: mariadb-pass-user
+                      key: password
+              imagePullPolicy: Always
+              volumeMounts:
+                - mountPath: /mysqldump
+                  name: mysqldump
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: /mysqldump
+          restartPolicy: OnFailure

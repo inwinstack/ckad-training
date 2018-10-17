@@ -1,0 +1,96 @@
+# WordPress deployment
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  namespace: exercise03
+  labels:
+    app: wordpress
+    type: frontend
+spec:
+  # With one replica it is enough
+  replicas: 1
+  # Pod definition
+  template:
+    metadata:
+      # Some basic metadata to be later used with services
+      labels:
+        app: wordpress
+        type: frontend
+    spec:
+      containers:
+        # Image information
+        - name: wordpress
+          image: bitnami/wordpress:4.9.2-r1
+          # Port information for later use with services
+          ports:
+            - containerPort: 80
+              name: http-port
+            - containerPort: 443
+              name: https-port
+          # Environment variables for configuration
+          env:
+            # Database credentials
+            - name: MARIADB_HOST
+              value: mariadb-service
+            - name: MARIADB_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise03-config
+                  key: MARIADB_PORT
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+            - name: WORDPRESS_DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise03-config
+                  key: DATABASE_USER
+            - name: WORDPRESS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+            - name: WORDPRESS_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise03-config
+                  key: MARIADB_DATABASE
+              # Some Wordpress basic data
+            - name: WORDPRESS_BLOG_NAME
+              value: Advanced Kubernetes Ingress Example
+            - name: WORDPRESS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-password
+                  key: password
+            # Mount the volume in the container
+          volumeMounts:
+            - mountPath: /bitnami
+              name: wordpress-vol
+        # Sidecar
+        - name: wordpress-backs
+          image: "instrumentisto/rsync-ssh"
+          volumeMounts:
+            - mountPath: /bitnami
+              name: wordpress-vol
+            - mountPath: /backup
+              name: wordpress-backup
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                echo backups
+                rsync -av  bitnami/ backup/ && sleep 600
+              done
+      volumes:
+        - name: wordpress-vol
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
+        - name: wordpress-backup
+          persistentVolumeClaim:
+            claimName: wordpress-backup-pvc

@@ -1,0 +1,17 @@
+# Drupal Persistent Volume Claim
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-pvc
+  namespace: exercise01
+  # We use labels here to classify the service itself as well
+  labels:
+    app: wordpress
+    type: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

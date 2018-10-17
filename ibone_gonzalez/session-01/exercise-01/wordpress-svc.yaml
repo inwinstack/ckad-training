@@ -11,4 +11,4 @@ spec:
       targetPort: http-port
   selector:
     app: wordpress
-    tier: frontend
+    type: frontend
