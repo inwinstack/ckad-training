@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: drupal
+    tier: frontend
+  name: drupal-internal
+  namespace: exercise-01
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+  - name: https
+    port: 443
+  selector:
+    app: drupal
+    tier: frontend

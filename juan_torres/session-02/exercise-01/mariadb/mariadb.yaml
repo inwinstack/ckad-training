@@ -1,0 +1,303 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: data-master
+  namespace: exercise-01
+spec:
+  storageClassName: fast-disks
+  local:
+    path: /opt/bitnami/kubernetes/localvolumes/data-master
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ip-172-31-58-57
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 4Gi
+  claimRef:
+    name: data-master
+    namespace: exercise-01
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: data-slave
+  namespace: exercise-01
+spec:
+  storageClassName: fast-disks
+  local:
+    path: /opt/bitnami/kubernetes/localvolumes/data-slave
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ip-172-31-58-57
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 4Gi
+  claimRef:
+    name: data-slave
+    namespace: exercise-01
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mariadb-master
+  namespace: exercise-01
+  labels:
+    app: database
+    tier: mariadb
+    mode: master
+spec:
+  replicas: 1
+  serviceName: mariadb-master
+  selector:
+    matchLabels:
+      app: database
+      tier: mariadb
+      mode: master
+  template:
+    metadata:
+      labels:
+        app: database
+        tier: mariadb
+        mode: master
+    spec:
+      containers:
+      - image: bitnami/mariadb:10.1
+        name: mariadb-master
+        ports:
+          - name: mariadb
+            containerPort: 3306
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: "master"
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_database
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_replication_user
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_replication_password
+        volumeMounts:
+        - name: data-master
+          mountPath: /bitnami
+          subPath: mariadb
+        resources:
+          limits:
+            cpu: 250m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;' \
+                  && kill -0 $(cat /opt/bitnami/mariadb/tmp/mysqld.pid)"
+          initialDelaySeconds: 35
+          periodSeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;'"
+          initialDelaySeconds: 35
+          periodSeconds: 15
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app: database
+        tier: mariadb
+        mode: master
+      name: data-master
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 6Gi
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mariadb-slave
+  namespace: exercise-01
+  labels:
+    app: database
+    tier: mariadb
+    mode: slave
+spec:
+  replicas: 2
+  serviceName: mariadb-slave
+  selector:
+    matchLabels:
+      app: database
+      tier: mariadb
+      mode: slave
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: database
+        tier: mariadb
+        mode: slave
+    spec:
+      containers:
+      - image: bitnami/mariadb:10.1
+        name: mariadb-slave
+        ports:
+          - name: mariadb
+            containerPort: 3306
+        env:
+          - name: MARIADB_REPLICATION_MODE
+            value: "slave"
+          - name: MARIADB_MASTER_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_master_host
+          - name: MARIADB_MASTER_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_port
+          - name: MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+          - name: MARIADB_MASTER_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+          - name: MARIADB_REPLICATION_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_replication_user
+          - name: MARIADB_REPLICATION_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_replication_password
+        resources:
+          limits:
+            cpu: 250m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        volumeMounts:
+        - name: data-slave
+          mountPath: /bitnami
+          subPath: mariadb
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u root -p$MARIADB_MASTER_ROOT_PASSWORD -e 'SHOW GLOBAL STATUS;' \
+                  && kill -0 $(cat /opt/bitnami/mariadb/tmp/mysqld.pid)"
+          initialDelaySeconds: 25
+          periodSeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "mysql -u $MARIADB_USER -p$MARIADB_PASSWORD -e 'SHOW GLOBAL STATUS;'"
+          initialDelaySeconds: 25
+          periodSeconds: 15
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+  volumeClaimTemplates:
+  - metadata:
+      labels:
+        app: database
+        tier: mariadb
+        mode: slave
+      name: data-slave
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 6Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: database
+    tier: mariadb
+  name: mariadb-slave
+  namespace: exercise-01
+spec:
+  type: ClusterIP
+  ports:
+  - name: mariadb
+    port: 3306
+  selector:
+    app: database
+    tier: mariadb
+    mode: slave
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: database
+    tier: mariadb
+  name: mariadb-master
+  namespace: exercise-01
+spec:
+  type: ClusterIP
+  ports:
+  - name: mariadb
+    port: 3306
+  selector:
+    app: database
+    tier: mariadb
+    mode: master

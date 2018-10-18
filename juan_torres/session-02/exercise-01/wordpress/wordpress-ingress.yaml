@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress-domain
+  namespace: exercise-01
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: wordpress.example.es
+    http:
+      paths:
+      - backend:
+          serviceName: wordpress-internal
+          servicePort: 80
+        path: /
+      - backend:
+          serviceName: wordpress-internal
+          servicePort: 443
+        path: /
+  tls:
+  - hosts:
+    - wordpress.example.es
+    secretName: wordpress-tls
