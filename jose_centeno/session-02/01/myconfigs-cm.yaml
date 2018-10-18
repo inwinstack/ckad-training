@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfigs
+  namespace: exercise-01
+data:
+#from https://github.com/bitnami/bitnami-docker-wordpress
+#https://hub.docker.com/r/bitnami/mariadb/
+
+#Wordpress config
+  WORDPRESS_USERNAME: user
+  WORDPRESS_EMAIL: user@example.com
+  WORDPRESS_FIRST_NAME: FirstName
+  WORDPRESS_LAST_NAME: LastName
+  WORDPRESS_BLOG_NAME: Usr's blog
+  MARIADB_DATABASE: bitnami_wordpress
+
+#Drupal config
+  DRUPAL_PROFILE: standard
+  DRUPAL_USERNAME: user
+  DRUPAL_PASSWORD: bitnami
+  DRUPAL_EMAIL: user@example.com
+  DRUPAL_DATABASE_NAME: drupal_db
+
+#MariaDB Connection
+  MARIADB_HOST: mariadb #could be used mariadb-0 and and use a nodeport service
+  MARIADB_PORT_NUMBER: "3306"

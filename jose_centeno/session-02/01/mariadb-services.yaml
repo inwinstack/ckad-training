@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  labels:
+    app: mariadb
+    tier: backend
+    type: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: exercise-01
+spec:
+  serviceName: nginx
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: backend
+      type: database
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: backend
+        type: database
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - image: bitnami/mariadb:10.1
+        name: mariadb
+        livenessProbe:
+          tcpSocket:
+            port: mariadb
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        env:
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: MARIADB_USER
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: MARIADB_PASSWORD
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: MARIADB_ROOT_PASSWORD
+        envFrom:
+          - configMapRef:
+              name: myconfigs
+        ports: 
+          - name: mariadb
+            containerPort: 3306
+        volumeMounts:
+            - name: mariadb-vol
+              mountPath: /bitnami
+      volumes:
+        - name: mariadb-vol
+          persistentVolumeClaim:
+            claimName: mariadb-pvc
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: mariadb
+    tier: backend
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+  selector:
+    app: mariadb
+    tier: backend
+  type: ClusterIP
