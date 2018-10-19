@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-backup-pvc
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    tier: backend
+    type: backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-backup
+  namespace: exercise-02
+spec:
+  template:
+    metadata:
+      name: database-backup
+      labels:
+        app: mariadb
+        tier: backend
+        type: backup
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      volumes:
+        - name: mariadb-backup-vol-host
+          hostPath:
+            path: /home/bitnami/bck
+      volumes:
+        - name: mariadb-backup-vol
+          persistentVolumeClaim:
+            claimName: mariadb-backup-pvc
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:10.1
+        command:
+         - "bin/bash"
+         - "-c"
+         - "mysqldump -h $BACKUP_DATABASE_HOST -u$BACKUP_DATABASE_USER -p$BACKUP_DATABASE_PASSWORD $BACKUP_DATABASE_NAME > /bitnami/backup/bck_$(date +\"%Y%m%d%H%M\").dmp"
+        env:
+        - name: BACKUP_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_NAME
+        - name: BACKUP_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_USER
+        - name: BACKUP_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_PASSWORD
+        - name: MARIADB_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_NAME
+        - name: BACKUP_DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: myconfigs
+              key: MARIADB_HOST
+        volumeMounts:
+            - name: mariadb-backup-vol
+              mountPath: /bitnami/backup
+      restartPolicy: Never

@@ -1,4 +1,4 @@
-# Solution for Session 2 exercises
+# Solution for Session 2 exercise 1
 
 A command.sh script is provided to create all the elements.
 
