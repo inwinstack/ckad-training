@@ -94,8 +94,8 @@ kubectl create -f conf/netpol.yaml
 #kubectl create -f cert-manager/sa.yaml
 #kubectl create -f cert-manager/cert-manager.yaml
 
-openssl req -x509 -nodes -days 365 -newkey rsa:1024 -subj "/CN=wordpress.example.es" -keyout cert/wordpress.key -out cert/wordpress.crt
-openssl req -x509 -nodes -days 365 -newkey rsa:1024 -subj "/CN=drupal.example.es" -keyout cert/drupal.key -out cert/drupal.crt
+openssl req -x509 -nodes -days 100 -subj "/CN=wordpress.example.es" -newkey rsa:1024 -keyout cert/wordpress.key -out cert/wordpress.crt
+openssl req -x509 -nodes -days 100 -subj "/CN=drupal.example.es" -newkey rsa:1024 -keyout cert/drupal.key -out cert/drupal.crt
 kubectl create secret tls wordpress-tls --key cert/wordpress.key  --cert cert/wordpress.crt -n exercise-01
 kubectl create secret tls drupal-tls --key cert/drupal.key  --cert cert/drupal.crt -n exercise-01
 
