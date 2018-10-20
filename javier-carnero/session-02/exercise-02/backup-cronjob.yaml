@@ -8,7 +8,7 @@ metadata:
     tier: backend
     release: production
 spec:
-  schedule: "*/1 * * * *" # every minute
+  schedule: "* */6 * * *" # every 6 hours
   jobTemplate:
     spec:
       template:
@@ -28,7 +28,8 @@ spec:
             - "/bin/bash"
             - "-c"
             - |
-              mysqldump -h$BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASSWORD $BACKUP_DATABASE > /bitnami/mariadb-backup/latest.sql
+              mysqldump -h$BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASSWORD $BACKUP_DATABASE > /bitnami/mariadb-backup/backup_$(date +%Y%m%d.%H:%M).sql;
+              find /bitnami/mariadb-backup/ -type f -name '*.sql' -mtime +7 -exec rm {} \;
             volumeMounts:
             - mountPath: /bitnami/mariadb-backup
               name: mariadb-backup

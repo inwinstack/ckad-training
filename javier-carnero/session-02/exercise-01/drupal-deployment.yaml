@@ -41,61 +41,63 @@ spec:
             cpu: "80m"
             memory: "500Mi"
         env:
-          - name: MARIADB_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: frontend-config
-                key: mariadb-host
-          - name: DRUPAL_DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-dbname
-          - name: DRUPAL_DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-user
-          - name: DRUPAL_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-password
-          - name: WORDPRESS_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-password
-          - name: DRUPAL_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: dr-credentials
-                key: user
-          - name: DRUPAL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: dr-credentials
-                key: password
-          - name: MARIADB_ROOT_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: root-password
-          - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-dbname
-          - name: MYSQL_CLIENT_CREATE_DATABASE_USER
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-user
-          - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: database-credentials
-                key: dr-password
+        - name: NAMI_DEBUG
+          value: "1"
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: mariadb-host
+        - name: DRUPAL_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-dbname
+        - name: DRUPAL_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-user
+        - name: DRUPAL_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-password
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-password
+        - name: DRUPAL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: dr-credentials
+              key: user
+        - name: DRUPAL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dr-credentials
+              key: password
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: root-password
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-dbname
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-user
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: dr-password
         livenessProbe:
           httpGet:
             scheme: HTTP
