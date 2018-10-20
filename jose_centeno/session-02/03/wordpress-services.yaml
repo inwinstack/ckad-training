@@ -66,8 +66,15 @@ spec:
         - name: myblog-wordpress-vol-backup
           persistentVolumeClaim:
             claimName: myblog-wordpress-backup-pvc
+      initContainers:
+      - image: busybox
+        name: wordpress-initializer
+        command: ['sh','-c','mkdir /bitnami/wordpress/; touch /bitnami/wordpress/.troll']
+        volumeMounts:
+          - name: myblog-wordpress-vol
+            mountPath: /bitnami
       containers:
-      - image: bitnami/wordpress:4.9.8
+      - image: javsalgar/wordpress:faulty
         name: wordpress
         readinessProbe:
           tcpSocket:
@@ -113,19 +120,18 @@ spec:
             mountPath: /bitnami
           - name: shared-data
             mountPath: /bitnami/wordpress/wp-content
-      # Sidecar container
+      # Sidecar containers
       - name: wordpress-backup
         image: jica/wordpress-backup:1.0
-#        image: debian
         volumeMounts:
           - name: myblog-wordpress-vol-backup
             mountPath: /backup
           - name: shared-data
             mountPath: /pod-data
-#        command: ["/bin/sh"]
-#        args: ["-c", "while true; do date >> /var/log/app.txt; sleep 5;done"]
-#        args: ["-c", "DIR=$(date +\"%Y%m%d%H%M\"); mkdir /backup/$DIR; cp -R /pod-data/ /backup/$DIR/"]
-
+      - name: mariadb-ambassador
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "/bin/nc -v -l -p $MARIADB_SERVICE_PORT -lk -e /bin/nc mariadb $MARIADB_SERVICE_PORT"]
 ---
 apiVersion: "v1"
 kind: "Service"

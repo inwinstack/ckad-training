@@ -9,7 +9,7 @@ openssl is needed to create TLS certificate:
 
 -`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./tls/drupal-myblog-com-tls.key -out ./tls/drupal-myblog-com-tls.crt -subj "/CN=drupal.myblog.com"`
 
-## Exercise I
+## Part I
 
 Deploy 3 applications:
 
@@ -23,7 +23,7 @@ Both Wordpress and Drupal will use the same MySQL deployment
 I've used session 1 - exercise I as base for this exercise
 
 
-## Exercise II
+## Part II
 Add persistence to the three solutions using PVCs
 
 ### Solution notes:
@@ -31,13 +31,13 @@ PVC definition will be on the same yaml that the statefulset that will use it.
 I'm using --- yaml separator instead of creating a k8s list object because I'm not sure
 if it should be better to separate on different files.
 
-## Exercise III
+## Part III
 Make sure tht only WordPress and Drupal can access the database using NetworkPolicies
 
 ### Solution notes:
 
 
-## Exercise IV
+## Part IV
 Add 2 Ingress rules:
 - myblog.com: WordPress
 - drupal.myblog.com/drupal: Drupal
