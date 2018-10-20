@@ -1,16 +1,13 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: ingress
+  name: ingress-wordpress
   namespace: exercise-01
 spec:
   tls:
   - hosts:
     - myblog.com
     secretName: wp-sslcerts
-  - hosts:
-    - drupal.myblog.com
-    secretName: dp-sslcerts
   rules:
   - host: myblog.com
     http:
@@ -18,11 +15,4 @@ spec:
         - path: /
           backend:
             serviceName: wordpress
-            servicePort: http
-  - host: drupal.myblog.com
-    http:
-      paths:
-        - path: /
-          backend:
-            serviceName: drupal
             servicePort: http

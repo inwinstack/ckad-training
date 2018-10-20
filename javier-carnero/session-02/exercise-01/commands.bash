@@ -41,13 +41,15 @@ if [ ! -d "key/wp" ]; then
 fi
 kubectl create secret tls wp-sslcerts --namespace="exercise-01" --key key/wp/tls.key --cert key/wp/tls.crt
 
+kubectl create --save-config -f ingress-wordpress.yaml
+
 if [ ! -d "key/dp" ]; then
     mkdir -p key/dp
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj "/CN=drupal.myblog.com" -keyout key/dp/tls.key -out key/dp/tls.crt
 fi
 kubectl create secret tls dp-sslcerts --namespace="exercise-01" --key key/dp/tls.key --cert key/dp/tls.crt
 
-kubectl create --save-config -f ingress.yaml
+kubectl create --save-config -f ingress-drupal.yaml
 
 
 # Access via browser to:
@@ -61,4 +63,4 @@ echo ""
 echo "---------------------------------"
 echo "After a few minutes access to:"
 echo "Wordpress: https://myblog.com"
-echo "Drupal: https://drupal.myblog.com"  # TODO: /drupal
+echo "Drupal: https://drupal.myblog.com/drupal"
