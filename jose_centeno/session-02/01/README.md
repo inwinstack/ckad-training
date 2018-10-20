@@ -2,10 +2,11 @@
 
 A command.sh script is provided to create all the elements.
 
-**Before executing command.sh** 
+**Requirements** 
 openssl is needed to create TLS certificate:
 
 -`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./tls/myblog-com-tls.key -out ./tls/myblog-com-tls.crt -subj "/CN=myblog.com"`
+
 -`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./tls/drupal-myblog-com-tls.key -out ./tls/drupal-myblog-com-tls.crt -subj "/CN=drupal.myblog.com"`
 
 ## Exercise I
@@ -47,9 +48,3 @@ Force HTTPS redirection
 ### Solution notes:
 
 Drupal is not working properly so I've tested deploying a wordpress instead of drupal
-
-**Before executing command.sh** 
-openssl is needed to create TLS certificate:
-
--`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./tls/myblog-com-tls.key -out ./tls/myblog-com-tls.crt -subj "/CN=myblog.com"`
--`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./tls/drupal-myblog-com-tls.key -out ./tls/drupal-myblog-com-tls.crt -subj "/CN=drupal.myblog.com"`

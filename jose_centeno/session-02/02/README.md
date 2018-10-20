@@ -23,6 +23,6 @@ To use the hostPath volume:
 - change volumeMount.name field to mariadb-backup-vol-host
 
 It uses same MariaDB image to execute mysqldump command.
-Other solution could be using https://github.com/camilb/kube-mysqldump-cron 
+Other solution could be using https://github.com/camilb/kube-mysqldump-cron that provides a specific container to execute mysqldump.
 
-
+TODO: Create a cron job.
