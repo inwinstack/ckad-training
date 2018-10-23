@@ -1,0 +1,25 @@
+{{- if and .Values.mariadb.enabled .Values.networkPolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "{{- printf "%s-%s" "netpolicy" $.Release.Name | trunc 63 | trimSuffix "-" -}}"
+  labels:
+    app: "{{ template "mariadb.name" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  podSelector:
+    matchLabels:
+      app: "{{ template "mariadb.name" . }}"
+      release: "{{ .Release.Name }}"
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: {{ template "fullname" . }}
+          release: "{{ .Release.Name }}"
+    ports:
+    - protocol: TCP
+      port: 3306
+{{- end }}
