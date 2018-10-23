@@ -263,5 +263,54 @@ tolerations: []
 ##
 affinity: {}
 
-## Custom
+##
+## Custom configuration from base chart
+##
+
+## Database Network policy
 networkPolicy: true
+
+##
+## MySQL chart configuration
+##
+## https://github.com/bitnami/charts/tree/master/bitnami/mysql
+##
+mysql:
+  ## Whether to deploy a mysql server to satisfy the applications database requirements. To use an external database set this and mariadb.enabled to false and configure the externalDatabase parameters
+  enabled: false
+  ## Disable MariaDB replication
+  replication:
+    enabled: false
+
+  ## Create a database and a database user
+  ## ref: https://github.com/bitnami/bitnami-docker-mariadb/blob/master/README.md#creating-a-database-user-on-first-run
+  ##
+  db:
+    name: bitnami_wordpress
+    user: bn_wordpress
+    ## If the password is not specified, mysql will generate a random password
+    ##
+    # password:
+
+  ## MySQL admin password
+  ## ref: https://github.com/bitnami/bitnami-docker-mysql#setting-the-root-password-on-first-run
+  ##
+  # rootUser:
+  #   password:
+
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  master:
+    persistence:
+      enabled: true
+      ## Persistent Volume Storage Class
+      ## If defined, storageClassName: <storageClass>
+      ## If set to "-", storageClassName: "", which disables dynamic provisioning
+      ## If undefined (the default) or set to null, no storageClassName spec is
+      ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+      ##   GKE, AWS & OpenStack)
+      ##
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 8Gi

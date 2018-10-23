@@ -67,6 +67,11 @@ The following table lists the configurable parameters of the WordPress chart and
 | `mariadb.db.name`                | Database name to create                    | `bitnami_wordpress`                                     |
 | `mariadb.db.user`                | Database user to create                    | `bn_wordpress`                                          |
 | `mariadb.db.password`            | Password for the database                  | _random 10 character long alphanumeric string_          |
+| `mysql.enabled`                  | Deploy MySQL container(s)                | `true`                                                    |
+| `mysql.rootUser.password`        | MySQL admin password                     | `nil`                                                     |
+| `mysql.db.name`                  | Database name to create                    | `bitnami_wordpress`                                     |
+| `mysql.db.user`                  | Database user to create                    | `bn_wordpress`                                          |
+| `mysql.db.password`              | Password for the database                  | _random 10 character long alphanumeric string_          |
 | `externalDatabase.host`          | Host of the external database              | `localhost`                                             |
 | `externalDatabase.user`          | Existing username in the external db       | `bn_wordpress`                                          |
 | `externalDatabase.password`      | Password for the above username            | `nil`                                                   |
@@ -74,6 +79,7 @@ The following table lists the configurable parameters of the WordPress chart and
 | `externalDatabase.port`          | Database port number                       | `3306`                                                  |
 | `serviceType`                    | Kubernetes Service type                    | `LoadBalancer`                                          |
 | `serviceExternalTrafficPolicy`   | Enable client source IP preservation       | `Cluster`                                               |
+| `networkPolicy`                  | Database network policy     | `false`                                                    |
 | `nodePorts.http`                 | Kubernetes http node port                  | `""`                                                    |
 | `nodePorts.https`                | Kubernetes https node port                 | `""`                                                    |
 | `healthcheckHttps`               | Use https for liveliness and readiness     | `false`                                                 |

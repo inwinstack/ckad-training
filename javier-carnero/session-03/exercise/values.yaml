@@ -99,7 +99,7 @@ externalDatabase:
 ##
 mariadb:
   ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this and mysql to false and configure the externalDatabase parameters
-  enabled: false
+  enabled: true
   ## Disable MariaDB replication
   replication:
     enabled: false
@@ -266,7 +266,7 @@ affinity: {}
 ## Custom configuration from base chart
 ##
 
-## TODO: set for mariadb or wordpress
+## Database Network policy
 networkPolicy: false
 
 ##
@@ -276,7 +276,7 @@ networkPolicy: false
 ##
 mysql:
   ## Whether to deploy a mysql server to satisfy the applications database requirements. To use an external database set this and mariadb.enabled to false and configure the externalDatabase parameters
-  enabled: true
+  enabled: false
   ## Disable MariaDB replication
   replication:
     enabled: false
