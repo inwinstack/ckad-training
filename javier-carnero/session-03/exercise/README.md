@@ -5,6 +5,7 @@ Wordpress chart for bitnami CKAD trainint, based on https://github.com/helm/char
 ## TL;DR;
 
 ```console
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm dependency update
 $ helm install ./
 ```

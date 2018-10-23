@@ -94,7 +94,7 @@ externalDatabase:
 ## https://github.com/helm/charts/blob/master/stable/mariadb/values.yaml
 ##
 mariadb:
-  ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this to false and configure the externalDatabase parameters
+  ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this and mysql.enabled to false and configure the externalDatabase parameters
   enabled: true
   ## Disable MariaDB replication
   replication:
