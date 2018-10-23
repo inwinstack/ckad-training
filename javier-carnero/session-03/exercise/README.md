@@ -10,7 +10,14 @@ $ helm dependency update
 $ helm install ./
 ```
 
-## What's implemented
+## Among others, the Chart allows setting (check configuration section below):
+
+* The number of WordPress replicas -_Feature from base Chart_
+* Ingress (with TLS Support) -_Feature from base Chart_
+* Database NetworkPolicies
+* Persistence -_Wordpress & MariaDB persistence from base Chart_ 
+* Choosing between MySQL or MariaDB as the backend
+* MySQL/MariaDB dump backup CronJob
 
 
 ## Installing the Chart
@@ -41,6 +48,8 @@ The following table lists the configurable parameters of the WordPress chart and
 
 |            Parameter             |                Description                 |                         Default                         |
 |----------------------------------|--------------------------------------------|---------------------------------------------------------|
+| `backup.enabled`                 | Database backup               | `false`                                                   |
+| `backup.period`                  | Period of the backup | `"* */6 * * *"`                                                   |
 | `global.imageRegistry`           | Global Docker image registry               | `nil`                                                   |
 | `image.registry`                 | WordPress image registry                   | `docker.io`                                             |
 | `image.repository`               | WordPress image name                       | `bitnami/wordpress`                                     |
