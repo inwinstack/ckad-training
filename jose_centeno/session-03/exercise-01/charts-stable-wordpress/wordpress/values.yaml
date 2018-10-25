@@ -23,6 +23,12 @@ image:
   # pullSecrets:
   #   - myRegistrKeySecretName
 
+plugins:
+#  - wp-super-cache.1.5.9.zip
+#  - dark-mode.3.1.zip
+  - https://downloads.wordpress.org/plugin/wp-super-cache.1.5.9.zip
+  - https://downloads.wordpress.org/plugin/dark-mode.3.1.zip
+
 ## User of the application
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
 ##

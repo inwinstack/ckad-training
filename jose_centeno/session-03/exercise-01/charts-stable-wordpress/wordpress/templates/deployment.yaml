@@ -26,6 +26,27 @@ spec:
         - name: {{ . }}
       {{- end}}
       {{- end }}
+{{- if .Values.plugins }}
+      initContainers:
+      - name: wordpress-plugins-installer
+        image: ubuntu
+        command: 
+          - 'sh'
+          - '-c'
+          - "apt-get update; apt-get install -y curl unzip;\
+{{- range .Values.plugins }}
+           PLUGIN_URL=\"{{ . }}\"; \
+           PLUGIN_NAME=$(basename $PLUGIN_URL); \ 
+           curl $PLUGIN_URL -o /tmp/$PLUGIN_NAME; \
+           unzip /tmp/$PLUGIN_NAME -d /bitnami/; \
+           rm /tmp/$PLUGIN_NAME;\
+{{- end }}
+           echo ."
+        volumeMounts:
+          - mountPath: /bitnami/
+            name: wordpress-data
+            subPath: wordpress/wp-content/plugins
+{{- end }}
       containers:
       - name: {{ template "fullname" . }}
         image: {{ template "wordpress.image" . }}
@@ -38,13 +59,13 @@ spec:
           value: "no"
         {{- end }}
         - name: MARIADB_HOST
-        {{- if .Values.mariadb.enabled }}
+        {{- if or .Values.mariadb.enabled .Values.mysql.enabled }}
           value: {{ template "mariadb.fullname" . }}
         {{- else }}
           value: {{ .Values.externalDatabase.host | quote }}
         {{- end }}
         - name: MARIADB_PORT_NUMBER
-        {{- if .Values.mariadb.enabled }}
+        {{- if or .Values.mariadb.enabled .Values.mysql.enabled }}
           value: "3306"
         {{- else }}
           value: {{ .Values.externalDatabase.port | quote }}
@@ -53,20 +74,28 @@ spec:
         {{- if .Values.mariadb.enabled }}
           value: {{ .Values.mariadb.db.name | quote }}
         {{- else }}
-          value: {{ .Values.externalDatabase.database | quote }}
+            {{- if .Values.mysql.enabled }}
+          value: {{ .Values.externalDatabase.name | quote }}
+            {{- else }}
+          value: {{ .Values.mysql.db.name | quote }}
+            {{- end }}
         {{- end }}
         - name: WORDPRESS_DATABASE_USER
         {{- if .Values.mariadb.enabled }}
           value: {{ .Values.mariadb.db.user | quote }}
         {{- else }}
+            {{- if .Values.mysql.enabled }}
           value: {{ .Values.externalDatabase.user | quote }}
+            {{- else }}
+          value: {{ .Values.mysql.db.user | quote }}
+            {{- end }}
         {{- end }}
         - name: WORDPRESS_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-            {{- if .Values.mariadb.enabled }}
+            {{- if or .Values.mariadb.enabled .Values.mysql.enabled }}
               name: {{ template "mariadb.fullname" . }}
-              key: mariadb-password
+              key: {{ template "database.password.secret.key" . }}
             {{- else }}
               name: {{ printf "%s-%s" .Release.Name "externaldb" }}
               key: db-password

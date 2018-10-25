@@ -20,7 +20,11 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "mariadb.fullname" -}}
-{{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
+    {{- if .Values.mariadb.enabled }}
+        {{- printf "%s-%s" .Release.Name "mariadb" | trunc 63 | trimSuffix "-" -}}
+    {{- else }}
+        {{- printf "%s-%s" .Release.Name "mysql" | trunc 63 | trimSuffix "-" -}}
+    {{- end }}
 {{- end -}}
 
 {{/*
@@ -44,4 +48,46 @@ Also, we can't use a single if because lazy evaluation is not an option
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the database name
+*/}}
+{{- define "database.name" -}}
+{{- printf "%s" "bitnami_wordpress" -}}
+{{- end -}}
+
+{{/*
+Return the database user
+*/}}
+{{- define "database.user" -}}
+    {{- printf "AAAA1-%s" .Values.mariadb.db.name | quote -}}
+    {{- printf "AAAA3-%s" .Values.externalDatabase.user | quote -}}
+    {{- printf "AAAA2-%s" .Values.mysql.db.name | quote -}}
+    {{- if .Values.mariadb.enabled }}
+        {{- printf "AAAA1-%s" .Values.mariadb.db.name | quote -}}
+    {{- else }}
+        {{- if .Values.mysql.enabled }}
+            {{- printf "AAAA3-%s" .Values.externalDatabase.user | quote -}}
+        {{- else }}
+            {{- printf "AAAA2-%s" .Values.mysql.db.name | quote -}}
+        {{- end }}
+    {{- end }}
+{{- end -}}
+
+
+
+
+
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "database.password.secret.key" -}}
+    {{- if .Values.mariadb.enabled }}
+        {{- printf "%s-password" "mariadb" | trunc 63 | trimSuffix "-" -}}
+    {{- else }}
+        {{- printf "%s-password" "mysql" | trunc 63 | trimSuffix "-" -}}
+    {{- end }}
 {{- end -}}
