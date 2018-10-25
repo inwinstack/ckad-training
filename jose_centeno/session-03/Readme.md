@@ -3,13 +3,13 @@
 ## Exercise I
 
 A WordPress Chart that allow setting:
-- The number of WordPress replicas 
-- Ingress (with TLS support)
-- NetworkPolicies
-- Persistence
-- Choosing between MySQL or MariaDB as the backend
-- MySQL dump backup CronJob
-- Providing a set of plugins to install at deployment time
+1. The number of WordPress replicas 
+2. Ingress (with TLS support)
+3. NetworkPolicies
+4. Persistence
+5. Choosing between MySQL or MariaDB as the backend
+6. MySQL dump backup CronJob
+7. Providing a set of plugins to install at deployment time
 
 ### Solution notes
 
@@ -21,7 +21,7 @@ To get current wordpress chart
 
 ./helm fetch stable/wordpress -d exercise-01/charts-stable-wordpress
 
-*Choosing between MySQL or MariaDB as the backend*
+**5. Choosing between MySQL or MariaDB as the backend**
 
 Once the new dependency (mysql) has been added on requirements.yaml file:
 - Add bitnami charts repo:
@@ -36,16 +36,16 @@ Then, I have:
 - Modified templates/deployment.yaml in order to use mysql when enabled.
 - Modified helpers.tpl to add some functions.
 
-*_TODO:_*
+_TODO:_
 - Add comments 
 - I have a problem (reported on slack) with helpers.
 
 
-*Providing a set of plugins to install at deployment time*
+**7. Providing a set of plugins to install at deployment time**
 
 I have added a initContainer to wordpress that will download and install the plugins.
 
-*MySQL dump backup CronJob* _Pending_
+**6. MySQL dump backup CronJob** _Pending_
 
 Like on session02-exercise02:
 - Create a PVC that will store the backups
