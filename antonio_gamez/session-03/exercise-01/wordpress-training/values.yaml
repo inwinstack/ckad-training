@@ -1,0 +1,148 @@
+## BEGIN IMAGE CONFIGURATION
+image:
+  registry: docker.io
+  repository: bitnami/wordpress
+  tag: 4.9.8-debian-9-r51 
+  pullPolicy: IfNotPresent
+## END IMAGE CONFIGURATION
+
+
+## BEGIN CERTMANAGER CONFIGURATION
+certManager: 
+  enabled: true
+  email: antgamdia@gmail.com
+  acmeServer: https://acme-staging-v02.api.letsencrypt.org/directory
+  # acmeServer: https://acme-v02.api.letsencrypt.org/directory
+  commonName: k8s.governify.io
+  dnsNames: 
+  - k8s.governify.io
+  - www.k8s.governify.io
+## END CERTMANAGER CONFIGURATION
+
+
+## BEGIN NETPOL CONFIGURATION
+netpol:
+  enabled: true
+## END NETPOL CONFIGURATION
+
+
+## BEGIN DB DUMP CONFIGURATION
+dbDump:
+  enabled: true
+  dbuser: root
+  dbpass: root_password
+  dbhost: mariadb
+  all_databases: "true"
+  everyMinutes: 10
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 10Gi
+## END NETPOL CONFIGURATION
+
+
+## BEGIN BASIC INFO CONFIGURATION
+wordpressInfo:
+  blogName: K8S training - session03/exercise01
+  username: antonio
+  email: antonio@example.com
+  firstName: Antonio
+  lastName: Kubernetes
+
+wordpressConfig:
+  databaseName: database_wp
+  databaseUser: dbuser_wp
+  databasePassword: dbuser_password
+  dbRootUser: root
+  dbRootPassword: root_password
+  wpUser: antonio
+  wpPassword: antonio_wp
+  replicaCount: 1
+  preinstalledPlugins:
+    - dark-mode.3.1
+    - jetpack.6.6.1
+  metricsExporter:
+    enabled: true
+## END BASIC INFO CONFIGURATION
+
+
+## BEGIN DEPLOY CONFIGURATION
+namespace: s03-exercise-01
+nodePorts:
+  http: "31080"
+  https: "31443"
+healthcheckHttps: false
+livenessProbe:
+  initialDelaySeconds: 240
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 300m
+## END DEPLOY CONFIGURATION
+
+
+## BEGIN INGRESS CONFIGURATION
+ingress:
+  enabled: true
+  hosts:
+  - name: k8s.governify.io
+    tls: true
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true" 
+## END INGRESS CONFIGURATION
+
+
+## BEGIN MARIADB CONFIGURATION
+mariadb:
+  enabled: false
+  replication:
+    enabled: false
+  db:
+    name: database_wp
+    user: dbuser_wp
+    password: dbuser_password
+  master:
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 8Gi
+  rootUser:
+    user: root
+    password: root_password
+## END MARIADB CONFIGURATION
+
+
+## BEGIN MYSQL CONFIGURATION
+mysql:
+  enabled: true
+  replication:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+  mysqlDatabase: database_wp
+  mysqlUser: dbuser_wp
+  mysqlPassword: dbuser_password
+  mysqlRootPassword: root_password
+## END MYSQL CONFIGURATION
+
+

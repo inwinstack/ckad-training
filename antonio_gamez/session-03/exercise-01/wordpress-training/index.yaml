@@ -1,0 +1,65 @@
+apiVersion: v1
+entries:
+  mariadb:
+  - appVersion: 10.1.36
+    created: 2018-10-26T23:14:32.2304736+02:00
+    description: Fast, reliable, scalable, and easy to use open-source relational
+      database system. MariaDB Server is intended for mission-critical, heavy-load
+      production systems as well as for embedding into mass-deployed software. Highly
+      available MariaDB cluster.
+    digest: 486c12bfdf44f6c73da9b8893b09b2395daee1dcea6ede3c037c60282ea69a99
+    engine: gotpl
+    home: https://mariadb.org
+    icon: https://bitnami.com/assets/stacks/mariadb/img/mariadb-stack-220x234.png
+    keywords:
+    - mariadb
+    - mysql
+    - database
+    - sql
+    - prometheus
+    maintainers:
+    - email: containers@bitnami.com
+      name: Bitnami
+    name: mariadb
+    sources:
+    - https://github.com/bitnami/bitnami-docker-mariadb
+    - https://github.com/prometheus/mysqld_exporter
+    urls:
+    - https://localhost:8081/charts/charts%5C/mariadb-5.2.2.tgz
+    version: 5.2.2
+  mysql:
+  - appVersion: 5.7.14
+    created: 2018-10-26T23:14:32.2314724+02:00
+    description: Fast, reliable, scalable, and easy to use open-source relational
+      database system.
+    digest: 1621357757bc9ca7849d9d94306e1f8fdd52bddd7e61dc42fe21374298f7f3bb
+    engine: gotpl
+    home: https://www.mysql.com/
+    icon: https://www.mysql.com/common/logos/logo-mysql-170x115.png
+    keywords:
+    - mysql
+    - database
+    - sql
+    maintainers:
+    - email: o.with@sportradar.com
+      name: olemarkus
+    - email: viglesias@google.com
+      name: viglesiasce
+    name: mysql
+    sources:
+    - https://github.com/kubernetes/charts
+    - https://github.com/docker-library/mysql
+    urls:
+    - https://localhost:8081/charts/charts%5C/mysql-0.10.2.tgz
+    version: 0.10.2
+  wordpress-training:
+  - appVersion: 4.9.8
+    created: 2018-10-26T23:14:32.2344717+02:00
+    description: Web publishing platform for building blogs and websites.
+    digest: d0d3cce4f79495ee2eb38e657569386d41b062ff032a279aad9bb446c66038a7
+    icon: https://bitnami.com/assets/stacks/wordpress/img/wordpress-stack-220x234.png
+    name: wordpress-training
+    urls:
+    - https://localhost:8081/charts/charts%5C/wordpress-training-3.2.1.tgz
+    version: 3.2.1
+generated: 2018-10-26T23:14:32.2284706+02:00

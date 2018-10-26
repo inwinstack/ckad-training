@@ -1,0 +1,15 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: wordpress serviceAccount creation
+# Purpose: creates a serviceAccount required by the wordpress plugin
+############################ # ############################
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wordpress-sa

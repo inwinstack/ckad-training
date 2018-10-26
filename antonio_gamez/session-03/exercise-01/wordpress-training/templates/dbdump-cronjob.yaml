@@ -1,0 +1,60 @@
+############################ # ############################
+## Bitnami K8S training
+## session02/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: database cronjob creation
+# Purpose: creates a cronjob for a periodic backup task in database
+############################ # ############################
+---
+{{- if .Values.dbDump.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ template "fullname" . }}-dbdump-cronjob
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  schedule: "*/{{ .Values.dbDump.everyMinutes }} * * * *" 
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mariadbdump
+            image: camil/mysqldump
+            env:
+              - name: ALL_DATABASES
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ template "fullname" . }}-dbdump-cm
+                    key: all_databases
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ template "fullname" . }}-dbdump-cm
+                    key: dbhost
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef: # from secret
+                    name: {{ template "fullname" . }}-dbdump-secret
+                    key: dbuser
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef: # from secret
+                    name: {{ template "fullname" . }}-dbdump-secret
+                    key: dbpass
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: {{ template "fullname" . }}-dbdump-data
+          volumes:
+            - name: {{ template "fullname" . }}-dbdump-data
+              persistentVolumeClaim:
+                claimName: {{ template "fullname" . }}-dbdump-pvc
+          restartPolicy: OnFailure
+{{- end }}

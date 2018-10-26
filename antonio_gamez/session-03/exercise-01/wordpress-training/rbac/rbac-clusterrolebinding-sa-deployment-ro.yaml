@@ -1,0 +1,25 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: ClusterRoleBinding for sa-deployment-ro
+# Purpose: defines a cluster role binding for sa-deployment-ro
+############################ # ############################
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: wordpress-sa-deployment-ro-clusterrolebinding
+subjects:
+- kind: ServiceAccount
+  name: wordpress-sa
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: deployment-ro-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+
+  # tail -f /opt/bitnami/apache/logs/error_log
