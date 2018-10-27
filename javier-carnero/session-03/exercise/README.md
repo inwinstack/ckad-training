@@ -2,12 +2,14 @@
 
 Wordpress chart for bitnami CKAD trainint, based on https://github.com/helm/charts/tree/master/stable/wordpress
 
+Additionally, installing it using `commands.bash` script, it is possible to automatically install an arbitrary list of Wordpress plugins at the same time (passed as arguments).
+
 ## TL;DR;
 
 ```console
 $ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm dependency update
-$ helm install ./
+$ ./commands.bash [LIST OF WORDPRESS PLUGINS]
 ```
 
 ## Among others, the Chart allows setting (check configuration section below):
