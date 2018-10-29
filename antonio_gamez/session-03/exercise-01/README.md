@@ -27,12 +27,12 @@
     * Find existing / create an exporter with WP API
     * Feel free to decide which metrics you want to export (a pair of metrics should be more than enough)
     * Add an option to the chart to enable the metrics
-    * IN_PROGRESS(export json del tablero) With the metrics, create a simple Grafana dashboard
+    * With the metrics, create a simple Grafana dashboard
   
   * Part 6. Create chart repo:
-    IN_PROGRESS* Create a repository with your created chart
+    * Create a repository with your created chart
       (crear server node)* Use a folder inside the sandbox, for example and create a simple server
-    IN_PROGRESS(va regular...)* Add it to Kubeapps
+    * Add it to Kubeapps
 
 
 
@@ -194,9 +194,6 @@ helm serve --repo-path '.\static\charts\' --address '0.0.0.0:8080'
 Finally, after entering at http://127.0.0.1:8081 with the `token` generated  (as explained at `commands.sh`), go to `Configuration -> Add Repositories -> Add App Repository` and choose a name and enter     `https://<your_cluster_ip>/charts` as URL.
 
 That's all. Kubeapps it's easy :)
-
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 
 ## Technical debt
   
