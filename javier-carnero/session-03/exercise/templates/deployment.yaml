@@ -8,7 +8,6 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
-  serviceAccountName: {{ template "fullname" . }}
   selector:
     matchLabels:
       app: {{ template "fullname" . }}
@@ -21,6 +20,7 @@ spec:
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
     spec:
+      serviceAccountName: {{ template "fullname" . }}-sa
       {{- if .Values.image.pullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.pullSecrets }}
@@ -152,7 +152,7 @@ spec:
           subPath: php
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-      - name: helper
+      - name: {{ template "fullname" . }}-helper
         image: lachlanevenson/k8s-kubectl:v1.12.2
         command:
         - "/bin/sh"
@@ -163,8 +163,17 @@ spec:
             echo 'Wordpress not ready...';
             sleep 5;
           done;
-          sed -i "s/define('WP_DEBUG', false/define('WP_DEBUG', true/g" /bitnami/wordpress/wp-config.php
-          cd /bitnami/wordpress/wp-content/plugins && curl -s -O https://raw.githubusercontent.com/emepetres/k8s-example-wp-plugin/master/k8s_example_plugin.php;
+          
+          echo "Installing Salme's plugin...";
+          cd /bitnami/wordpress/wp-content/plugins;
+          curl -s -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o ./k8s-example-wp-plugin.zip;
+          unzip ./k8s-example-wp-plugin.zip;
+          mv k8s-example-wp-plugin-master k8s-example-wp-plugin;
+          sed -i 's|https://PUT_HERE_DNS_OF_API_SERVER:443|http://127.0.0.1:8080|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+          sed -i 's|PUT_HERE_API_PATH_TO_DEPLOYMENTS|apis/apps/v1/namespaces/{{ .Release.Namespace }}/deployments|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+          sed -i 's|PUT_HERE_THE_PATH_TO_THE_SERVICE_ACCOUNT_TOKEN_FILE|/var/run/secrets/kubernetes.io/serviceaccount/token|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+          rm k8s-example-wp-plugin.zip
+
           echo "Opening an API proxy...";
           kubectl proxy --port 8080;
         volumeMounts:
