@@ -150,6 +150,8 @@ spec:
         - mountPath: /bitnami/php
           name: wordpress-data
           subPath: php
+        - mountPath: /opt/bitnami/apache/logs
+          name: wordpress-apache-logs
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       - name: {{ template "fullname" . }}-helper
@@ -166,6 +168,7 @@ spec:
           
           echo "Installing Salme's plugin...";
           cd /bitnami/wordpress/wp-content/plugins;
+          rm -rf k8s-example-wp-plugin;
           curl -s -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o ./k8s-example-wp-plugin.zip;
           unzip ./k8s-example-wp-plugin.zip;
           mv k8s-example-wp-plugin-master k8s-example-wp-plugin;
@@ -175,11 +178,16 @@ spec:
           rm k8s-example-wp-plugin.zip
 
           echo "Opening an API proxy...";
-          kubectl proxy --port 8080;
+          kubectl proxy --port 8080 &
+
+          echo "Finally, start printing Apache error log:";
+          tail -f /bitnami/apache/logs/error_log;
         volumeMounts:
         - mountPath: /bitnami/wordpress
           name: wordpress-data
           subPath: wordpress
+        - mountPath: /bitnami/apache/logs
+          name: wordpress-apache-logs
       volumes:
       - name: wordpress-data
       {{- if .Values.persistence.enabled }}
@@ -188,6 +196,8 @@ spec:
       {{- else }}
         emptyDir: {}
       {{ end }}
+      - name: wordpress-apache-logs
+        emptyDir: {}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
