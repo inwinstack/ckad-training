@@ -2,7 +2,6 @@
 
 Wordpress chart for bitnami CKAD trainint, based on https://github.com/helm/charts/tree/master/stable/wordpress
 
-Additionally, installing it using `install-plugins.bash` script, it is possible to automatically install an arbitrary list of Wordpress plugins at the same time (passed as arguments).
 
 ## TL;DR;
 
@@ -10,10 +9,6 @@ Additionally, installing it using `install-plugins.bash` script, it is possible 
 $ helm repo add bitnami https://charts.bitnami.com/bitnami
 $ helm dependency update
 $ helm install ./
-```
-Install wordpress plugins (e.g. wordpress-seo and jetpack)
-```console
-$ ./install-plugins.bash wodrpress-seo jetpack
 ```
 
 ## Among others, the Chart allows setting (check configuration section below):
@@ -87,6 +82,9 @@ The following table lists the configurable parameters of the WordPress chart and
 | `mysql.db.name`                  | Database name to create                    | `bitnami_wordpress`                                     |
 | `mysql.db.user`                  | Database user to create                    | `bn_wordpress`                                          |
 | `mysql.db.password`              | Password for the database                  | _random 10 character long alphanumeric string_          |
+| `externalPlugins.enabled`        | Install external plugins                   | `true`                                                  |
+| `externalPlugins.activate`       | Activate the external plugins              | `true`                                                  |
+| `externalPlugins.list`           | List of plugins to be installed            | `['wordpress-seo', 'jetpack']`                          |
 | `externalDatabase.host`          | Host of the external database              | `localhost`                                             |
 | `externalDatabase.user`          | Existing username in the external db       | `bn_wordpress`                                          |
 | `externalDatabase.password`      | Password for the above username            | `nil`                                                   |

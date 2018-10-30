@@ -140,6 +140,59 @@ spec:
             scheme: HTTPS
           {{- end }}
 {{ toYaml .Values.readinessProbe | indent 10 }}
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - "/bin/sh"
+              - "-c"
+              - |
+                apt-get update && apt-get install -q unzip;
+                until $(curl --output /dev/null --silent --head --fail http://localhost/wp-login.php); do
+                  echo 'Wordpress not ready...';
+                  sleep 5;
+                done;
+
+                echo 'Installing plugins...';
+                curl -s -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar;
+                chmod +x wp-cli.phar;
+                mv wp-cli.phar /usr/local/bin/wp;
+                ln -s /opt/bitnami/php/bin/php /usr/bin/php;
+                sed -i "/remove x-pingback HTTP header/a if ( !defined( 'WP_CLI' ) ) {" /opt/bitnami/wordpress/wp-config.php;
+                echo "}" >> /opt/bitnami/wordpress/wp-config.php;
+
+                {{- if .Values.externalPlugins.enabled }}
+                {{- range $plugin_name:=.Values.externalPlugins.list }}
+                echo "Installing {{ $plugin_name }}...";
+                sudo -u bitnami -i -- wp plugin install --path=/opt/bitnami/wordpress {{ $plugin_name }};
+                {{- end }}
+                {{- end }}
+                {{- if .Values.externalPlugins.activate }}
+                {{- range $plugin_name:=.Values.externalPlugins.list }}
+                sudo -u bitnami -i -- wp plugin activate --path=/opt/bitnami/wordpress {{ $plugin_name }};
+                {{- end }}
+                {{- end }}
+
+                echo "Installing Salme's plugin...";
+                cd /bitnami/wordpress/wp-content/plugins;
+                rm -rf k8s-example-wp-plugin;
+                curl -s -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o ./k8s-example-wp-plugin.zip;
+                unzip ./k8s-example-wp-plugin.zip;
+                mv k8s-example-wp-plugin-master k8s-example-wp-plugin;
+                sed -i 's|https://PUT_HERE_DNS_OF_API_SERVER:443|http://127.0.0.1:8080|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+                sed -i 's|PUT_HERE_API_PATH_TO_DEPLOYMENTS|apis/apps/v1/namespaces/{{ .Release.Namespace }}/deployments|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+                sed -i 's|PUT_HERE_THE_PATH_TO_THE_SERVICE_ACCOUNT_TOKEN_FILE|/var/run/secrets/kubernetes.io/serviceaccount/token|g' k8s-example-wp-plugin/k8s_example_plugin.php;
+                rm k8s-example-wp-plugin.zip;
+                sudo -u bitnami -i -- wp plugin activate --path=/opt/bitnami/wordpress k8s-example-wp-plugin
+
+                echo "Installing Prometheus exporter...";
+                cd /bitnami/wordpress/wp-content/plugins;
+                rm -rf wordpress-exporter-prometheus;
+                curl -s -L https://github.com/origama/wordpress-exporter-prometheus/archive/master.zip -o ./wordpress-exporter-prometheus.zip;
+                unzip ./wordpress-exporter-prometheus.zip;
+                mv wordpress-exporter-prometheus-master wordpress-exporter-prometheus;
+                rm wordpress-exporter-prometheus.zip
+                sudo -u bitnami -i -- wp plugin activate --path=/opt/bitnami/wordpress wordpress-exporter-prometheus
         volumeMounts:
         - mountPath: /bitnami/apache
           name: wordpress-data
@@ -165,30 +218,11 @@ spec:
             echo 'Wordpress not ready...';
             sleep 5;
           done;
-          
-          echo "Installing Salme's plugin...";
-          cd /bitnami/wordpress/wp-content/plugins;
-          rm -rf k8s-example-wp-plugin;
-          curl -s -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o ./k8s-example-wp-plugin.zip;
-          unzip ./k8s-example-wp-plugin.zip;
-          mv k8s-example-wp-plugin-master k8s-example-wp-plugin;
-          sed -i 's|https://PUT_HERE_DNS_OF_API_SERVER:443|http://127.0.0.1:8080|g' k8s-example-wp-plugin/k8s_example_plugin.php;
-          sed -i 's|PUT_HERE_API_PATH_TO_DEPLOYMENTS|apis/apps/v1/namespaces/{{ .Release.Namespace }}/deployments|g' k8s-example-wp-plugin/k8s_example_plugin.php;
-          sed -i 's|PUT_HERE_THE_PATH_TO_THE_SERVICE_ACCOUNT_TOKEN_FILE|/var/run/secrets/kubernetes.io/serviceaccount/token|g' k8s-example-wp-plugin/k8s_example_plugin.php;
-          rm k8s-example-wp-plugin.zip
 
           echo "Opening an API proxy...";
           kubectl proxy --port 8080 &
 
-          echo "Installing Prometheus exporter...";
-          cd /bitnami/wordpress/wp-content/plugins;
-          rm -rf wordpress-exporter-prometheus;
-          curl -s -L https://github.com/origama/wordpress-exporter-prometheus/archive/master.zip -o ./wordpress-exporter-prometheus.zip;
-          unzip ./wordpress-exporter-prometheus.zip;
-          mv wordpress-exporter-prometheus-master wordpress-exporter-prometheus;
-          rm wordpress-exporter-prometheus.zip
-
-          echo "Finally, start printing Apache error log:";
+          echo "Start printing Apache error log:";
           tail -f /bitnami/apache/logs/error_log;
         volumeMounts:
         - mountPath: /bitnami/wordpress

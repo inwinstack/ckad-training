@@ -333,3 +333,11 @@ backup:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 8Gi
+
+## Wordpress plugins
+externalPlugins:
+  enabled: true
+  activate: true
+  list:
+  - wordpress-seo
+  - jetpack
