@@ -1,0 +1,2 @@
+*/10 * * * * root exec /script.sh
+

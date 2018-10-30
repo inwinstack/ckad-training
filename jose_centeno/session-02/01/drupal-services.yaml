@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myblog-drupal-pvc
+  labels:
+    app: myblog-drupal
+    tier: frontend
+    track: stable
+    type: app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: myblog-drupal
+  namespace: exercise-01
+  labels:
+    app: myblog-drupal
+    tier: frontend
+    track: stable
+    type: app
+spec:
+  serviceName: nginx
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myblog-drupal
+      tier: frontend
+      track: stable
+      type: app
+  template:
+    metadata:
+      labels:
+        app: myblog-drupal
+        tier: frontend
+        track: stable
+        type: app
+    spec:
+      containers:
+      - image: bitnami/drupal:8.6.1
+        name: drupal
+        readinessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        env:
+          - name: DRUPAL_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: DRUPAL_DATABASE_USER
+          - name: DRUPAL_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: DRUPAL_DATABASE_PASSWORD
+          - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: myconfigs
+                key: DRUPAL_DATABASE_NAME
+          - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: DRUPAL_DATABASE_USER
+          - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: DRUPAL_DATABASE_PASSWORD
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: myconfigs
+                key: MARIADB_ROOT_PASSWORD
+        envFrom:
+          - configMapRef:
+              name: myconfigs
+        ports: 
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        volumeMounts:
+          - name: myblog-drupal-vol
+            mountPath: /bitnami
+      volumes:
+        - name: myblog-drupal-vol
+          persistentVolumeClaim:
+            claimName: myblog-drupal-pvc
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: myblog-drupal
+  namespace: exercise-01
+  labels:
+    app: myblog-drupal
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: http
+  selector:
+    app: myblog-drupal
+    tier: frontend
+  sessionAffinity: ClientIP
+  sessionAffinityConfig: 
+    clientIP: 
+      timeoutSeconds: 300

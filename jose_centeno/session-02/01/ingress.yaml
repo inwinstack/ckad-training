@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: myblog-ingress
+  namespace: exercise-01
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+#    nginx.ingress.kubernetes.io/force-ssl-redirect: true
+spec:
+  tls:
+  - hosts:
+    - myblog.com
+    secretName: myblog-com-secret-tls
+  - hosts:
+    - drupal.myblog.com
+    secretName: drupal-myblog-com-secret-tls
+  rules:
+  - host: myblog.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myblog-wordpress
+          servicePort: 80
+  - host: drupal.myblog.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: myblog-drupal
+          servicePort: 80
+      - path: /drupal
+        backend:
+          serviceName: myblog-drupal
+          servicePort: 80

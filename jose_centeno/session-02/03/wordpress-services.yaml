@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myblog-wordpress-pvc
+  labels:
+    app: myblog-wordpress
+    tier: frontend
+    track: stable
+    type: app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myblog-wordpress-backup-pvc
+  labels:
+    app: myblog-wordpress
+    tier: frontend
+    track: stable
+    type: backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: myblog-wordpress
+  namespace: exercise-03
+  labels:
+    app: myblog-wordpress
+    tier: frontend
+    track: stable
+    type: app
+spec:
+  serviceName: nginx
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myblog-wordpress
+      tier: frontend
+      track: stable
+      type: app
+  template:
+    metadata:
+      labels:
+        app: myblog-wordpress
+        tier: frontend
+        track: stable
+        type: app
+    spec:
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+        - name: myblog-wordpress-vol
+          persistentVolumeClaim:
+            claimName: myblog-wordpress-pvc
+        - name: myblog-wordpress-vol-backup
+          persistentVolumeClaim:
+            claimName: myblog-wordpress-backup-pvc
+      initContainers:
+      - image: busybox
+        name: wordpress-initializer
+        command: ['sh','-c','mkdir /bitnami/wordpress/; touch /bitnami/wordpress/.troll']
+        volumeMounts:
+          - name: myblog-wordpress-vol
+            mountPath: /bitnami
+      containers:
+      - image: javsalgar/wordpress:faulty
+        name: wordpress
+        readinessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        env:
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_NAME
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_USER
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_DATABASE_PASSWORD
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: myconfigs
+              key: WORDPRESS_PASSWORD
+        envFrom:
+          - configMapRef:
+              name: myconfigs
+        ports: 
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        volumeMounts:
+          - name: myblog-wordpress-vol
+            mountPath: /bitnami
+          - name: shared-data
+            mountPath: /bitnami/wordpress/wp-content
+      # Sidecar containers
+      - name: wordpress-backup
+        image: jica/wordpress-backup:1.0
+        volumeMounts:
+          - name: myblog-wordpress-vol-backup
+            mountPath: /backup
+          - name: shared-data
+            mountPath: /pod-data
+      - name: mariadb-ambassador
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "/bin/nc -v -l -p $MARIADB_SERVICE_PORT -lk -e /bin/nc mariadb $MARIADB_SERVICE_PORT"]
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: myblog-wordpress
+  namespace: exercise-03
+  labels:
+    app: myblog-wordpress
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: http
+  selector:
+    app: myblog-wordpress
+    tier: frontend
+  sessionAffinity: ClientIP
+  sessionAffinityConfig: 
+    clientIP: 
+      timeoutSeconds: 300
