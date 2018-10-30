@@ -4,5 +4,5 @@ OWNERS
 # example production yaml
 values-production.yaml
 # plugins scripts
-commands.bash
-install-plugins.sh
+install-plugins.bash
+install-plugins-helper.sh
