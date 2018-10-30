@@ -180,6 +180,14 @@ spec:
           echo "Opening an API proxy...";
           kubectl proxy --port 8080 &
 
+          echo "Installing Prometheus exporter...";
+          cd /bitnami/wordpress/wp-content/plugins;
+          rm -rf wordpress-exporter-prometheus;
+          curl -s -L https://github.com/origama/wordpress-exporter-prometheus/archive/master.zip -o ./wordpress-exporter-prometheus.zip;
+          unzip ./wordpress-exporter-prometheus.zip;
+          mv wordpress-exporter-prometheus-master wordpress-exporter-prometheus;
+          rm wordpress-exporter-prometheus.zip
+
           echo "Finally, start printing Apache error log:";
           tail -f /bitnami/apache/logs/error_log;
         volumeMounts:
