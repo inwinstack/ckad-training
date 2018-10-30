@@ -1,0 +1,36 @@
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session02/exercise01
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: wordpress ingress
+# # Purpose: redirects "k8s.governify.io" to wordpress
+# ############################ # ############################
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress-ingress
+  namespace: s02-exercise-01
+  labels:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true" 
+spec:
+  tls:
+  - hosts:
+    - k8s.governify.io
+    secretName: k8s-governify-io-tls
+  rules:
+  - host: k8s.governify.io # k8s.governify.io: WordPress
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: wordpress
+          servicePort: http

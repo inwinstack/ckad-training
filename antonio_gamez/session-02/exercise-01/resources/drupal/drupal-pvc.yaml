@@ -1,0 +1,25 @@
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session01/exercise02
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: drupal pv claim creation
+# # Purpose: allocates some persistence
+# ############################ # ############################
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drupal-pvc
+  namespace: s02-exercise-01
+  labels:
+    app: drupal
+    tier: frontend
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi

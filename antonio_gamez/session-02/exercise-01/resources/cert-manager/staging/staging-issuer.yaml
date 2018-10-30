@@ -1,0 +1,23 @@
+# ############################ # ############################
+# ## Bitnami K8S training
+# ## session01/exercise02
+# #
+# ## Author: Antonio Gamez-Diaz
+# ## Contact: antoniogamez@us.es
+# #
+# # File: staging Let's Encrypt cert issuer
+# # Purpose: connects to ACMEv2 staging endpoint to request a new cert
+# ############################ # ############################
+# ---
+# apiVersion: certmanager.k8s.io/v1alpha1
+# kind: Issuer
+# metadata:
+#   name: letsencrypt-staging
+#   namespace: s02-exercise-01
+# spec:
+#   acme:
+#     server: https://acme-staging-v02.api.letsencrypt.org/directory
+#     email: antgamdia@gmail.com
+#     privateKeySecretRef:
+#       name: letsencrypt-staging
+#     http01: {}

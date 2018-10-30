@@ -1,0 +1,28 @@
+############################ # ############################
+## Bitnami K8S training
+## session01/exercise02
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: NetworkPolicy to allow some connections
+# Purpose: allows connections between "database" and "frontend" labeled pods
+############################ # ############################
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-frontend-allow
+  namespace: s02-exercise-01
+spec:
+  podSelector:
+    matchLabels:
+      tier: database
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 3306
