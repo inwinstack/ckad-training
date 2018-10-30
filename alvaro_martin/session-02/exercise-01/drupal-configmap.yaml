@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drupal
+  namespace: exercise-01
+data:
+  database-name: bitnami_drupal

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress
+  namespace: exercise-02
+data:
+  database: bitnami_wordpress
+  wp-blogname: k8s_training
