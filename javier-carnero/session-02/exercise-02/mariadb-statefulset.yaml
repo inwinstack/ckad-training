@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: exercise-02
+  labels:
+    app: mariadb
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+      tier: backend
+  serviceName: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+        tier: backend
+    spec:
+      terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: mariadb
+        image: bitnami/mariadb:10.1
+        volumeMounts:
+        - mountPath: /bitnami/mariadb
+          name: mariadb-data
+        ports:
+          - name: mysql
+            containerPort: 3306
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "250Mi"
+          limits:
+            cpu: "50m"
+            memory: "500Mi"
+        env:
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: root-password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-dbname
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: database-credentials
+                key: wp-password
+        livenessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command: ["sh", "-c", "exec mysqladmin status -uroot -p$MARIADB_ROOT_PASSWORD"]
+          initialDelaySeconds: 15
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: mariadb-data
+      namespace: exercise-02
+      labels:
+        app: mariadb
+        type: backend
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi

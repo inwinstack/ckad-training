@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-wordpress
+  namespace: exercise-01
+spec:
+  tls:
+  - hosts:
+    - myblog.com
+    secretName: wp-sslcerts
+  rules:
+  - host: myblog.com
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: wordpress
+            servicePort: http

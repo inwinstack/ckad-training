@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+  selector:
+    app: wordpress
+    tier: frontend

@@ -1,0 +1,157 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: exercise-03
+  labels:
+    app: wordpress
+    tier: frontend
+    release: production
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+      release: production
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        release: production
+    spec:
+      initContainers:
+      - name: untroller
+        image: alpine:latest
+        volumeMounts:
+        - mountPath: /bitnami
+          name: wordpress-data
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          mkdir /bitnami/wordpress;
+          touch /bitnami/wordpress/.troll;
+      containers:
+      - name: wordpress
+        image: javsalgar/wordpress:faulty
+        volumeMounts:
+        - mountPath: /bitnami
+          name: wordpress-data
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        resources:
+          requests:
+            cpu: "40m"
+            memory: "250Mi"
+          limits:
+            cpu: "80m"
+            memory: "500Mi"
+        env:
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: mariadb-host
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: wp-dbname
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: wp-user
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: wp-password
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: wp-credentials
+              key: user
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wp-credentials
+              key: password
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: blog-name
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /wp-login.php
+            port: http
+          initialDelaySeconds: 300
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /wp-login.php
+            port: http
+          initialDelaySeconds: 180
+          periodSeconds: 15
+      - name: ambassador
+        image: alpine/socat
+        env:
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: frontend-config
+              key: mariadb-host
+        command:
+        - sh
+        - -c
+        - socat TCP-LISTEN:3306,fork,reuseaddr TCP:$MARIADB_HOST:3306
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "100Mi"
+          limits:
+            cpu: "30m"
+            memory: "200Mi"
+      - name: backup
+        image: eeacms/rsync:latest
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          while true; do
+            if curl http://wordpress/wp-login.php; then
+              echo 'Backing-up...';
+              rsync -av --delete /wordpress-data /wordpress-backup;
+            else
+              echo 'Wordpress not ready...';
+            fi
+            sleep 60;
+          done;
+        volumeMounts:
+        - mountPath: /wordpress-data
+          name: wordpress-data
+        - mountPath: /wordpress-backup
+          name: wordpress-backup
+        resources:
+          requests:
+            cpu: "40m"
+            memory: "250Mi"
+          limits:
+            cpu: "80m"
+            memory: "500Mi"
+      volumes:
+      - name: wordpress-data
+        persistentVolumeClaim:
+          claimName: wordpress-pvc
+      - name: wordpress-backup
+        persistentVolumeClaim:
+          claimName: wordpress-backup
