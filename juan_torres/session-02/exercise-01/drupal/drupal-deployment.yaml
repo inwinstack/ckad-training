@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: data-drupal
+  namespace: exercise-01
+spec:
+  storageClassName: fast-disks
+  local:
+    path: /opt/bitnami/kubernetes/localvolumes/data-drupal
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ip-172-31-58-57
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 4Gi
+  claimRef:
+    name: data-drupal
+    namespace: exercise-01
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: drupal
+    tier: frontend
+  name: data-drupal
+  namespace: exercise-01
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: drupal-prod
+  namespace: exercise-01
+  labels:
+    app: drupal
+    tier: frontend
+spec:
+  replicas: 1
+  revisionHistoryLimit: 6
+  selector:
+    matchLabels:
+      app: drupal
+      tier: frontend
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: drupal
+        tier: frontend
+    spec:
+      containers:
+      - image: bitnami/drupal:latest
+        name: drupal-prod
+        ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_master_host
+          - name: MARIADB_PORT_NUMBER
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_port
+          - name: DRUPAL_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_user
+          - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_user
+          - name: DRUPAL_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_password
+          - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_password
+          - name: DRUPAL_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_database
+          - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cm-mariadb
+                key: mariadb_database
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-mariadb
+                key: mariadb_root_password
+          - name: DRUPAL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: secret-drupal
+                key: drupal_username
+          - name: DRUPAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: secret-drupal
+                key: drupal_password
+          - name: DRUPAL_EMAIL
+            valueFrom:
+              secretKeyRef:
+                name: secret-drupal
+                key: drupal_email
+        volumeMounts:
+        - name: volume-drupal
+          mountPath: /bitnami
+          subPath: drupal
+        resources:
+          limits:
+            cpu: 350m
+            memory: 1024Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "curl -I localhost:80 | grep -c 1 && kill -0 $(cat /opt/bitnami/apache/tmp/httpd.pid)"
+          initialDelaySeconds: 60
+          periodSeconds: 25
+        readinessProbe:
+          exec:
+            command:
+            - "/bin/bash"
+            - "-c"
+            - "curl -I localhost:80 | grep -c 1"
+          initialDelaySeconds: 60
+          periodSeconds: 35
+      volumes:
+      - name: volume-drupal
+        persistentVolumeClaim:
+          claimName: data-drupal

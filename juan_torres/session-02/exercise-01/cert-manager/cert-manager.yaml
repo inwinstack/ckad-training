@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  labels:
+    app: cert-manager
+    release: cert-manager
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cert-manager
+      release: cert-manager
+  template:
+    metadata:
+      labels:
+        app: cert-manager
+        release: cert-manager
+    spec:
+      containers:
+      - args:
+        - --cluster-resource-namespace=$(POD_NAMESPACE)
+        - --leader-election-namespace=$(POD_NAMESPACE)
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: quay.io/jetstack/cert-manager-controller:v0.4.1
+        name: cert-manager
+      serviceAccount: cert-manager
+      serviceAccountName: cert-manager

@@ -4,10 +4,9 @@ metadata:
   name: cm-mariadb
   namespace: exercise-01
 data:
-  mariadb_host: "mariadb"
   mariadb_database: "wordpress"
-  mariadb_extra_flags: "--max-connect-errors=1000 --max_connections=155"
   mariadb_port: "3306"
+  mariadb_master_host: "mariadb-master"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -15,6 +14,4 @@ metadata:
   name: cm-wordpress
   namespace: exercise-01
 data:
-  wordpress_username: "bitnami"
-  wordpress_email: "example@gmail.com"
-  wordpress_blog_name: "Kubernetes Bitnami"
+  wordpress_blog_name: "Kubernetes"
