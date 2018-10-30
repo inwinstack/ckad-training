@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-svc
+  namespace: exercise-03
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http-sv-wp
+      port: 80
+      targetPort: http-wp
+      protocol: TCP
+    - name: https-sv-wp
+      port: 443
+      targetPort: https-wp
+      protocol: TCP
+  selector:
+    app: wordpress
+    tier: frontend

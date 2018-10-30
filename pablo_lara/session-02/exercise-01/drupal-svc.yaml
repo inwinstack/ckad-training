@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-svc
+  namespace: exercise-01
+  labels:
+    app: drupal
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http-sv-dp
+      port: 80
+      targetPort: http-dp
+    - name: https-sv-dp
+      port: 443
+      targetPort: https-dp
+  selector:
+    app: drupal
+    tier: frontend

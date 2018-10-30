@@ -1,0 +1,88 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  namespace: exercise-02
+  labels:
+    app: wordpress
+    tier: frontend
+    track: stable
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+      - image: bitnami/wordpress:latest
+        livenessProbe:
+            initialDelaySeconds: 160
+            periodSeconds: 30
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+        readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+        name: wordpress
+        ports:
+        - name: http-wp
+          containerPort: 80
+          protocol: TCP
+        - name: https-wp
+          containerPort: 443
+          protocol: TCP
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: dbhost
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: mariadb-database-password
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: username-wp
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: password-wp
+          - name: WORDPRESS_FIRST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name
+          - name: WORDPRESS_LAST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-last-name
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name-blog
+        volumeMounts:
+          - name: wordpress-vol
+            mountPath: /bitnami/wordpress
+      volumes:
+        - name: wordpress-vol
+          persistentVolumeClaim:
+            claimName: wordpress-pvc

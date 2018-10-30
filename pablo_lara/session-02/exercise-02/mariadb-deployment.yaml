@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-deployment
+  namespace: exercise-02
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: backend
+        role: mysqldump
+    spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - image: bitnami/mariadb:10.1
+        name: mariadb
+        ports:
+        - name: mysql-port
+          containerPort: 3306
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 90
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "mysqladmin ping -u root -p${MARIADB_ROOT_PASSWORD}"
+          initialDelaySeconds: 35
+          periodSeconds: 10
+        env:
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-root-password
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-database-name
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-database-user
+          - name: MARIADB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-database-password
+        volumeMounts:
+          - name: mariadb-vol
+            mountPath: /bitnami/wordpress/mariadb
+      volumes:
+        - name: mariadb-vol
+          persistentVolumeClaim:
+            claimName: mariadb-pvc

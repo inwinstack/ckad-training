@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: drupal-state
+  namespace: exercise-01
+  labels:
+    app: drupal
+    tier: frontend
+    track: stable
+spec:
+  selector:
+    matchLabels:
+      app: drupal
+      tier: frontend
+  serviceName: "drupal-svc"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: drupal
+        tier: frontend
+        track: stable
+    spec:
+      containers:
+      - image: bitnami/drupal:latest
+        name: drupal
+        ports:
+        - name: http-dp
+          containerPort: 80
+        - name: https-dp
+          containerPort: 443
+        env:
+          - name: DRUPAL_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: mariadb-database-password
+          - name: DRUPAL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: username-wp
+          - name: DRUPAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: password-wp
+          - name: DRUPAL_DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-database-name
+          - name: DRUPAL_DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: mariadb-database-user
+        volumeMounts:
+          - name: drupal
+            mountPath: /bitnami/drupal
+      volumes:
+        - name: drupal
+          persistentVolumeClaim:
+            claimName: drupal-pvc

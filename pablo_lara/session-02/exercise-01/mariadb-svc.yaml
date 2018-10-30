@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: exercise-01
+  labels:
+    app: wordpress
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - name: mysql-sv-port
+    port: 3306
+    targetPort: mysql-port
+  selector:
+    app: wordpress
+    tier: backend

@@ -1,0 +1,61 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mysqldump
+  namespace: exercise-02
+  labels:
+    app: mysqldump
+    tier: backend
+spec:
+  schedule: "*/1 * * * *" 
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: mysqldump
+            tier: backend
+        spec:
+          securityContext:
+            runAsUser: 1001
+            fsGroup: 1001
+          containers:
+          - name: mariadb
+            image: bitnami/mariadb:latest
+            command: ["/bin/bash", "-c", "mysqldump -h$DB_HOST -u$DB_USER -p$DB_PASS $DB_DATABASE > /bitnami/mysqldump/ndb.sql;"]
+            volumeMounts:
+            - mountPath: /bitnami/mysqldump
+              name: mysqldump
+            resources:
+              requests:
+                cpu: "25m"
+                memory: "250Mi"
+              limits:
+                cpu: "50m"
+                memory: "500Mi"
+            env:
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: wp-configmap
+                    key: dbhost
+              - name: DB_DATABASE
+                valueFrom:
+                  secretKeyRef:
+                    name: mariadb-secret
+                    key: mariadb-database-name
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: mariadb-secret
+                    key: mariadb-database-user
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: mariadb-secret
+                    key: mariadb-database-password
+          restartPolicy: Never
+          volumes:
+          - name: mysqldump
+            persistentVolumeClaim:
+              claimName: mysqldump

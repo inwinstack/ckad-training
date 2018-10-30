@@ -1,0 +1,122 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-deployment
+  namespace: exercise-03
+  labels:
+    app: wordpress
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      initContainers:
+        - name: init-troll
+          image: busybox
+          volumeMounts:
+          - name: wp-data
+            mountPath: /bitnami/wordpress
+          command: ["/bin/sh", "-c", "touch /bitnami/wordpress/.troll;"]
+      containers:
+      - name: wordpress
+        image: javsalgar/wordpress:faulty
+        volumeMounts:
+        - mountPath: /bitnami/wordpress
+          name: wp-data
+        ports:
+        - name: http-wp
+          containerPort: 80
+          protocol: TCP
+        - name: https-wp
+          containerPort: 443
+          protocol: TCP
+        env:
+          - name: MARIADB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: dbhost
+          - name: WORDPRESS_DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: mariadb-database-password
+          - name: WORDPRESS_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: username-wp
+          - name: WORDPRESS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: wordpress-secret
+                key: password-wp
+          - name: WORDPRESS_FIRST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name
+          - name: WORDPRESS_LAST_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-last-name
+          - name: WORDPRESS_BLOG_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: wp-configmap
+                key: wp-name-blog
+        livenessProbe:
+            initialDelaySeconds: 160
+            periodSeconds: 30
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+        readinessProbe:
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            httpGet:
+              scheme: HTTP
+              path: /wp-login.php
+              port: 80
+      - name: wp-socat-ambassador #Ambassador container
+        image: alpine/socat
+        command: ['/bin/sh','-c', 'socat tcp-listen:3306,fork,reuseaddr tcp-connect:mariadb:3306;']
+      - name: wp-backup #Backup wp-content every 10 minutes
+        image: woahbase/alpine-ssh
+        volumeMounts:
+        - name: wp-data
+          mountPath: /bitnami/wordpress/wp-content
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          while true; do
+            if curl http://myblog.com/wp-login.php; then
+              echo "WordPress ready for backup";
+              rsync -av --delete /wp-data /wp-backup;
+              echo "Backup completed";
+            else
+              echo "Backup impossible";
+            fi
+            sleep 600;
+          done;
+        volumeMounts:
+        - mountPath: /wp-backup
+          name: wp-backup
+      volumes:
+      - name: wp-data
+        persistentVolumeClaim:
+          claimName: wordpress-pvc
+      - name: wp-backup
+        persistentVolumeClaim:
+          claimName: wp-backup
