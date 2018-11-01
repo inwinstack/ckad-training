@@ -20,6 +20,7 @@ spec:
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
     spec:
+      serviceAccountName: {{ template "fullname" . }}-service-account
       {{- if .Values.image.pullSecrets }}
       imagePullSecrets:
       {{- range .Values.image.pullSecrets }}
@@ -35,10 +36,10 @@ spec:
           - '-c'
           - "apt-get update; apt-get install -y curl unzip;\
 {{- range .Values.plugins }}
-           PLUGIN_URL=\"{{ . }}\"; \
-           PLUGIN_NAME=$(basename $PLUGIN_URL); \ 
-           curl $PLUGIN_URL -o /tmp/$PLUGIN_NAME; \
-           unzip /tmp/$PLUGIN_NAME -d /bitnami/; \
+           PLUGIN_URL=\"{{ . }}\";\
+           PLUGIN_NAME=$(basename $PLUGIN_URL|cut -d? -f 1);\ 
+           curl -L $PLUGIN_URL -o /tmp/$PLUGIN_NAME;\
+           unzip /tmp/$PLUGIN_NAME -d /bitnami/;\
            rm /tmp/$PLUGIN_NAME;\
 {{- end }}
            echo ."
@@ -52,6 +53,8 @@ spec:
         image: {{ template "wordpress.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         env:
+        - name: WP_K8S_PLUGIN_DEPLOYMENT_NAME
+          value: {{ template "fullname" . }}
         - name: ALLOW_EMPTY_PASSWORD
         {{- if .Values.allowEmptyPassword }}
           value: "yes"

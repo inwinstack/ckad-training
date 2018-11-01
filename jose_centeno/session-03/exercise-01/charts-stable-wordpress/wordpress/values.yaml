@@ -28,6 +28,7 @@ plugins:
 #  - dark-mode.3.1.zip
   - https://downloads.wordpress.org/plugin/wp-super-cache.1.5.9.zip
   - https://downloads.wordpress.org/plugin/dark-mode.3.1.zip
+  - https://github.com/jica/k8s-example-wp-plugin/raw/master/bin/k8s-example-wp-plugin.zip
 
 ## User of the application
 ## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
