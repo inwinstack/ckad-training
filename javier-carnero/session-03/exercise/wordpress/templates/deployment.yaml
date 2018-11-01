@@ -19,6 +19,10 @@ spec:
         app: {{ template "fullname" . }}
         chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
         release: "{{ .Release.Name }}"
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: '/wp-json/metrics'
+        prometheus.io/port: '80'
     spec:
       serviceAccountName: {{ template "fullname" . }}-sa
       {{- if .Values.image.pullSecrets }}
