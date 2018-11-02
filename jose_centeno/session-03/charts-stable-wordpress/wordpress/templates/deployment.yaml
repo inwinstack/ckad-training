@@ -29,7 +29,7 @@ spec:
       {{- end }}
 {{- if .Values.plugins }}
       initContainers:
-      - name: wordpress-plugins-installer
+      - name: {{ template "fullname" . }}-plugins-installer
         image: ubuntu
         command: 
           - 'sh'

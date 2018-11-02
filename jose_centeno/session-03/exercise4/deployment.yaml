@@ -29,7 +29,7 @@ spec:
       {{- end }}
 {{- if .Values.plugins }}
       initContainers:
-      - name: wordpress-plugins-installer
+      - name: {{ template "fullname" . }}-plugins-installer
         image: ubuntu
         command: 
           - 'sh'
@@ -49,6 +49,15 @@ spec:
             subPath: wordpress/wp-content/plugins
 {{- end }}
       containers:
+      - name: {{ template "fullname" . }}-log-errors
+        image: ubuntu
+        command: 
+          - 'sh'
+          - '-c'
+          - "tail -f /bitnami/apache/logs/error_log"
+        volumeMounts:
+          - mountPath: /bitnami/
+            name: opt-bitnami
       - name: {{ template "fullname" . }}
         image: {{ template "wordpress.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
@@ -170,6 +179,8 @@ spec:
         - mountPath: /bitnami/php
           name: wordpress-data
           subPath: php
+        - mountPath: /opt/bitnami/
+          name: opt-bitnami
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       volumes:
@@ -180,6 +191,8 @@ spec:
       {{- else }}
         emptyDir: {}
       {{ end }}
+      - name: opt-bitnami
+        emptyDir: {}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
