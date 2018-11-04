@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "fullname" . }}-mysqldump-pvc
+  labels:
+   {{- if .Values.mariadb.enabled }}
+    app: mariadb
+  {{- else }}
+    app: mysql
+  {{- end }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+spec:
+  accessModes:
+    - ReadWriteMany 
+  resources:
+    requests:
+      storage: {{ .Values.cronJob.persistence.size | quote }}
