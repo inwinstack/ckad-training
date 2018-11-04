@@ -56,7 +56,7 @@ spec:
           # Mount the volume in the container
           volumeMounts:
             - name: drupal-local-storage
-              mountPath: /var/www/html
+              mountPath: /bitnami
       # Volumen
       volumes:
         - name: drupal-local-storage

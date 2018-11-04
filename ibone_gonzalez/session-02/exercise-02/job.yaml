@@ -1,6 +1,6 @@
 # Job mysqldump
 apiVersion: batch/v2alpha1
-kind: ScheduledJob
+kind: CronJob
 metadata:
   name: mysqldump
   namespace: exercise02
@@ -9,7 +9,7 @@ metadata:
     type: database
 spec:
   # period in which the job is executed
-  schedule: "*/1 * * * *"
+  schedule: "* 1 * * *"
   jobTemplate:
     spec:
       template:
