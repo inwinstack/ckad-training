@@ -9,4 +9,4 @@ https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/fluentd-elas
 
 Diffs from upstream have been saved to ./kubernetes_cluster_addons_fluentd-elasticsearch.diff.
 
-For the access go to: http://localhost:8001/api/v1/namespaces/logging/services/kibana-logging/
+For the access go to: http://localhost:8001/api/v1/namespaces/logging/services/kibana-logging/proxy

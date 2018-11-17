@@ -10,6 +10,7 @@ image:
   registry: docker.io
   repository: bitnami/wordpress
   tag: 4.9.8
+  # tag: 4.9.8-debian-9-r51
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -173,10 +174,10 @@ ingress:
       ##
       ## If tls is set to true, annotation ingress.kubernetes.io/secure-backends: "true" will automatically be set
       ## If certManager is set to true, annotation kubernetes.io/tls-acme: "true" will automatically be set
-      ? annotations
+      annotations:
       #  kubernetes.io/ingress.class: nginx
 
-  ? secrets
+  secrets:
   ## If you're providing your own certificates, please use this to add the certificates as secrets
   ## key and certificate should start with -----BEGIN CERTIFICATE----- or
   ## -----BEGIN RSA PRIVATE KEY-----
@@ -220,3 +221,6 @@ cronJob:
   persistence:
     size: 10Gi
   schedule: "1 * * * *"
+
+WorpressPlugins:
+  - defender-security
