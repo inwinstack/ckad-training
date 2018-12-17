@@ -1,0 +1,11 @@
+1. Get the WordPress URL:
+
+  You should be able to access your new WordPress installation through
+
+  {{- range .Values.ingress.hosts }}
+  {{ if .tls }}https{{ else }}http{{ end }}://{{ .name }}/admin
+  {{ end }}
+2. Login with the following credentials to see your blog
+
+  echo Username: {{ .Values.wordpressUsername }}
+  echo Password: $(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "fullname" . }} -o jsonpath="{.data.wordpress-password}" | base64 --decode)

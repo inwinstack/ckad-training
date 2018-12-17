@@ -1,0 +1,32 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: certificate request for each of Values.certManager.dnsNames domains 
+# Purpose: requests a new cert for each of Values.certManager.dnsNames related domains (using staging issuer endpoint)
+############################ # ############################
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ template "fullname" . }}-certificate
+spec:
+  secretName: {{ template "fullname" . }}-certificate
+  issuerRef:
+    name: {{ template "fullname" . }}-letsencrypt-production
+  commonName: {{ .Values.certManager.commonName }}
+  dnsNames: 
+    {{- range $key, $value := .Values.certManager.dnsNames }}
+    - {{ $value | quote }}
+    {{- end }}
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx
+      domains: 
+        {{- range $key, $value := .Values.certManager.dnsNames }}
+        - {{ $value | quote }}
+        {{- end }}

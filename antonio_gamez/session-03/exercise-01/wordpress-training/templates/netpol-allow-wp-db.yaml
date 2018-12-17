@@ -1,0 +1,35 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: NetworkPolicy to allow some connections
+# Purpose: allows connections between "database" and "frontend" labeled pods
+############################ # ############################
+---
+{{- if .Values.netpol.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "fullname" . }}-netpol-wp-db-allow
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  podSelector:
+    matchLabels:
+      
+      app: database
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 3306
+{{- end }}

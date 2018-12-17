@@ -1,0 +1,288 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: wordpress deployment creation
+# Purpose: defines the pods, replicas, liveness and readiness probes for wordpress
+############################ # ############################
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ template "fullname" . }}-deploy
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.wordpressConfig.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        tier: frontend
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end}}
+      {{- end }}
+      containers:
+      - name: {{ template "fullname" . }}-wordpress
+        image: {{ template "wordpress.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+          resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: MARIADB_HOST
+        - name: MARIADB_PORT_NUMBER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: MARIADB_PORT_NUMBER
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_USER
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_NAME
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: WORDPRESS_BLOG_NAME
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_USERNAME
+        - name: WORDPRESS_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: WORDPRESS_EMAIL
+        - name: WORDPRESS_FIRST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: WORDPRESS_FIRST_NAME
+        - name: WORDPRESS_LAST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-cm
+              key: WORDPRESS_LAST_NAME
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_PASSWORD
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_PASSWORD
+        # DB creation by using mysql client 
+        - name: MARIADB_ROOT_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: MARIADB_ROOT_USER
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: MARIADB_ROOT_PASSWORD
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_NAME
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_USER
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD # create db name
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-secret
+              key: WORDPRESS_DATABASE_PASSWORD
+        - name: WP_K8S_PLUGIN_DEPLOYMENT_NAME
+          value: {{ template "fullname" . }}-deploy # name of the current deployment
+        livenessProbe: 
+          httpGet:
+            path: /wp-login.php
+          {{- if not .Values.healthcheckHttps }}
+            port: http
+            scheme: HTTP
+          {{- else }}
+            port: https
+            scheme: HTTPS
+          {{- end }}
+{{ toYaml .Values.livenessProbe | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /wp-login.php
+          {{- if not .Values.healthcheckHttps }}
+            port: http
+            scheme: HTTP
+          {{- else }}
+            port: https
+            scheme: HTTPS
+          {{- end }}
+{{ toYaml .Values.readinessProbe | indent 10 }}
+        volumeMounts:
+        - mountPath: /opt/bitnami/apache/logs
+          name: wordpress-apache-logs
+          subPath: logs
+        - mountPath: /bitnami/apache
+          name: wordpress-data
+          subPath: apache
+        - mountPath: /bitnami/wordpress
+          name: wordpress-data
+          subPath: wordpress
+        - mountPath: /bitnami/php
+          name: wordpress-data
+          subPath: php
+          
+      - name: {{ template "fullname" . }}-sdtoutexporter
+        image: gliderlabs/alpine
+        volumeMounts:
+        - name: wordpress-apache-logs
+          mountPath: /logs
+          subPath: logs
+        command: 
+          - sh
+          - "-c"
+          - |
+            URL_CHECK='http://{{ template "fullname" . }}/wp-login.php';
+            CHECK_INTERVAL='10s';
+            echo "Installing curl..."
+            apk add --update curl
+            i=0;
+            echo "Starting apache logs stdout forwarding...";
+            while true; do
+                echo "Checking WordPress state before performing apache logs stdout forwarding...";
+                echo "Using '$URL_CHECK' endpoint. Waiting '$CHECK_INTERVAL'. Iteration: $i";
+                if curl --fail -insecure -XGET -m10 $URL_CHECK &>/dev/null; then
+                    echo "The service is ready";
+                    echo "---------"
+                    tail -f -n 1 /logs/access_log /logs/error_log
+                    while true; do sleep 1000; done # we need this container always running 
+                else
+                    echo "The service is not ready yet"
+                    echo "#############################################################";
+                fi;
+                i=$(( $i + 1 ))
+                sleep $CHECK_INTERVAL;
+            done;
+      - name: {{ template "fullname" . }}-plugininstallator
+        image: gliderlabs/alpine
+        volumeMounts:
+        - name: wordpress-data
+          mountPath: /wordpress
+          subPath: wordpress
+        command:
+          - sh
+          - "-c"
+          - |
+            URL_CHECK='http://{{ template "fullname" . }}/wp-login.php';
+            CHECK_INTERVAL='10s';
+            echo "Installing curl and zip..."
+            apk add --update curl zip
+            i=0;
+            done=0;
+            echo "Starting Wordpress plugins instalation...";
+            while [ $done -lt 1 ] ; do
+                echo "Checking WordPress state before performing Wordpress plugins instalation...";
+                echo "Using '$URL_CHECK' endpoint. Waiting '$CHECK_INTERVAL'. Iteration: $i"
+                if curl --fail -insecure -XGET -m10 $URL_CHECK &>/dev/null; then
+                    echo "Wordpress is ready";
+
+                    {{- range $key, $value := .Values.wordpressConfig.preinstalledPlugins }}
+
+                    echo "------ BEGIN installing wordpress plugin {{ $value }} ------"
+                    echo "Downloading plugin -{{ $value }}-..."
+                    curl -L http://downloads.wordpress.org/plugin/{{ $value }}.zip -o /tmp/{{ $value }}.zip -s
+                    echo "Extracting plugin -{{ $value }}- to -/wordpress/wp-content/plugins-..."
+                    unzip   /tmp/{{ $value }}.zip -d /wordpress/wp-content/plugins
+                    rm -rf  /tmp/{{ $value }}.zip
+                    echo "------ END installing wordpress plugin {{ $value }} ------"
+
+                    {{- end }}
+
+                    echo "------ BEGIN installing our special RBAC-SalmePlugin ------"
+                    echo "Deleting previous versions of -k8s-example-wp-plugin-..."
+                    rm -rf /wordpress/wp-content/plugins/k8s-example-wp-plugin
+                    echo "Downloading plugin -k8s-example-wp-plugin-..."
+                    curl -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o /tmp/k8s-example-wp-plugin.zip -s
+                    echo "Extracting plugin -k8s-example-wp-plugin-..."
+                    unzip /tmp/k8s-example-wp-plugin.zip -d /tmp/
+                    echo "Replacing configuration strings -k8s-example-wp-plugin-..."
+                    sed -i 's/PUT_HERE_DNS_OF_API_SERVER:443/kubernetes.default.svc:443/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                    sed -i 's/PUT_HERE_API_PATH_TO_DEPLOYMENTS/apis\/extensions\/v1beta1\/namespaces\/{{ .Values.namespace }}\/deployments/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                    sed -i 's/PUT_HERE_THE_PATH_TO_THE_SERVICE_ACCOUNT_TOKEN_FILE/\/var\/run\/secrets\/kubernetes.io\/serviceaccount\/token/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                    echo "Moving to wordpress plugins folder -k8s-example-wp-plugin-..."
+                    mv /tmp/k8s-example-wp-plugin-master /wordpress/wp-content/plugins/k8s-example-wp-plugin
+                    echo "Deleting temporal files for -k8s-example-wp-plugin-..."
+                    rm -rf  /tmp/k8s-example-wp-plugin-master
+                    echo "------ END installing wordpress plugin k8s-example-wp-plugin ------"
+
+                    {{- if .Values.wordpressConfig.metricsExporter.enabled }}
+                    echo "------ BEGIN installing Prometheus exporter WP plugin ------"
+                    echo "Deleting previous versions of -wordpress-exporter-prometheus-..."
+                    rm -rf /wordpress/wp-content/plugins/wordpress-exporter-prometheus
+                    echo "Downloading plugin -wordpress-exporter-prometheus-..."
+                    curl -L https://github.com/antgamdia/ckad-training/raw/antonio_gamez_s03/antonio_gamez/session-03/exercise-01/static/wordpress-exporter-prometheus.zip -o /tmp/wordpress-exporter-prometheus.zip -s
+                    echo "Extracting plugin -wordpress-exporter-prometheus-..."
+                    unzip /tmp/wordpress-exporter-prometheus.zip -d /wordpress/wp-content/plugins/wordpress-exporter-prometheus
+                    rm -rf  /tmp/wordpress-exporter-prometheus.zip
+                    echo "------ END installing wordpress plugin wordpress-exporter-prometheus ------"
+                    {{- end }}
+
+                    done=$(( $done + 1 ))
+                    while true; do sleep 1000; done # we need this container always running 
+                else
+                  echo "Wordpress is not ready yet. Retrying in '$CHECK_INTERVAL'"
+                  echo "#############################################################";
+                fi;
+                i=$(( $i + 1 ))
+                sleep $CHECK_INTERVAL;
+            done;
+            echo "Wordpress plugins instalation completed";
+      volumes:
+      - name: wordpress-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim | default (include "fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{ end }}
+      - name: wordpress-apache-logs
+        emptyDir: {}

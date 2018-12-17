@@ -1,0 +1,22 @@
+############################ # ############################
+## Bitnami K8S training
+## session03/exercise01
+#
+## Author: Antonio Gamez-Diaz
+## Contact: antoniogamez@us.es
+#
+# File: production Let's Encrypt cert issuer
+# Purpose: connects to ACMEv2 production endpoint to request a new cert
+############################ # ############################
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: {{ template "fullname" . }}-letsencrypt-production
+spec:
+  acme:
+    server: {{ .Values.certManager.acmeServer }}
+    email: {{ .Values.certManager.email }}
+    privateKeySecretRef:
+      name: {{ template "fullname" . }}-letsencrypt-production
+    http01: {}
