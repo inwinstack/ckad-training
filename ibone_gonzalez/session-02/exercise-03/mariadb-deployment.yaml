@@ -1,0 +1,60 @@
+# Mariadb deployment
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mariadb-deployment
+  namespace: exercise03
+  labels:
+    app: mariadb
+    type: database
+spec:
+  # With one replica it is enough
+  replicas: 1
+  # Pod definition
+  template:
+    metadata:
+      # Some basic metadata to be later used with services
+      labels:
+        app: mariadb
+        type: database
+    spec:
+      containers:
+        # Image information
+        - name: mariadb
+          image: bitnami/mariadb:10.1.24-r2
+          # Port information for later use with services
+          ports:
+            - containerPort: 3306
+              name: db-port
+            # Environment variables for configuration
+          env:
+            # Database that will be created
+            # mariadb must use these credentials
+            - name: MARIADB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise03-config
+                  key: MARIADB_USER
+            - name: MARIADB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise03-config
+                  key: MARIADB_DATABASE
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-pass-user
+                  key: password
+          volumeMounts:
+            - name: mariadb-vol
+              mountPath: /bitnami
+      volumes:
+        - name: mariadb-vol
+          persistentVolumeClaim:
+            claimName: mariadb-pvc

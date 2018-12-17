@@ -1,0 +1,9 @@
+dependencies:
+- name: mariadb
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 5.2.2
+- name: mysql
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 0.10.2
+digest: sha256:303b5c1a88d61a7a0545016203d84fb3d469ce65f3d64eadd6c0c45000dd232a
+generated: 2018-11-04T13:32:42.6282908+01:00

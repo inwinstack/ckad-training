@@ -9,13 +9,13 @@ spec:
     matchLabels:
       app: wordpress
       role: slave
-      tier: backend
+      type: backend
   template:
     metadata:
       labels:
         app: wordpress
         role: slave
-        tier: backend
+        type: backend
     spec:
       containers:
         - image: bitnami/mariadb:latest

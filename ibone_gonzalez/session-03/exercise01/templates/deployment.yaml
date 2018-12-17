@@ -1,0 +1,194 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
+    type: frontend
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+      chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
+      release: release
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
+        release: release
+    spec:
+      containers:
+      - name: {{ template "fullname" . }}
+        image: {{ template "wordpress.image" . }}
+        env:
+        - name: MARIADB_HOST
+          {{- if .Values.mariadb.enabled }}
+          value: {{ template "mariadb.fullname" . }}
+          {{- else }}
+          value: {{ .Values.externalDatabase.host | quote }}
+          {{- end }}
+        - name: MARIADB_PORT_NUMBER
+          {{- if .Values.mariadb.enabled }}
+          value: "3306"
+          {{- else }}
+          value: {{ .Values.externalDatabase.port | quote }}
+          {{- end }}
+        - name: WORDPRESS_DATABASE_NAME
+          {{- if .Values.mariadb.enabled }}
+          value: {{ .Values.mariadb.db.name | quote }}
+          {{- else }}
+          value: {{ .Values.externalDatabase.database | quote }}
+          {{- end }}
+        - name: WORDPRESS_DATABASE_USER
+          {{- if .Values.mariadb.enabled }}
+          value: {{ .Values.mariadb.db.user | quote }}
+          {{- else }}
+          value: {{ .Values.externalDatabase.user | quote }}
+          {{- end }}
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.mariadb.enabled }}
+              name: {{ template "mariadb.fullname" . }}
+              key: mariadb-password
+              {{- else }}
+              name: {{ printf "%s-%s" .Release.Name "externaldb" }}
+              key: db-password
+              {{- end }}
+        - name: WORDPRESS_USERNAME
+          value: {{ .Values.wordpressUsername | quote }}
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}
+              key: WORDPRESS_PASSWORD
+        - name: WORDPRESS_EMAIL
+          value: {{ .Values.wordpressEmail | quote }}
+        - name: WORDPRESS_FIRST_NAME
+          value: {{ .Values.wordpressFirstName | quote }}
+        - name: WORDPRESS_LAST_NAME
+          value: {{ .Values.wordpressLastName | quote }}
+        - name: WORDPRESS_BLOG_NAME
+          value: {{ .Values.wordpressBlogName | quote }}
+        - name: WORDPRESS_TABLE_PREFIX
+          value: {{ .Values.wordpressTablePrefix | quote }}
+        ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - sh
+                - "-c"
+                - |
+                  URL_CHECK='http://{{ template "fullname" . }}/wp-login.php';
+                  CHECK_INTERVAL='10s';
+                  echo "Installing curl and zip..."
+                  apk add --update curl zip
+                  i=0;
+                  done=0;
+                  echo "Starting Wordpress plugins instalation...";
+                  while [ $done -lt 1 ] ; do
+                      echo "wordpress is running?";
+                      if curl --fail -insecure -XGET -m10 $URL_CHECK &>/dev/null; then
+                          echo "Wordpress is ready";
+                          {{- range $key, $value := .Values.WorpressPlugins }}
+                          curl -L http://downloads.wordpress.org/plugin/{{ $value }}.zip -o /tmp/{{ $value }}.zip -s
+                          unzip   /tmp/{{ $value }}.zip -d /wordpress/wp-content/plugins
+                          rm -rf  /tmp/{{ $value }}.zip
+                          echo "plugin {{ $value }} was intalled"
+                          {{- end }}
+                          echo "installing javsalgar/k8s-example-wp-plugin "
+                          rm -rf /wordpress/wp-content/plugins/k8s-example-wp-plugin
+                          curl -L https://github.com/javsalgar/k8s-example-wp-plugin/archive/master.zip -o /tmp/k8s-example-wp-plugin.zip -s
+                          unzip /tmp/k8s-example-wp-plugin.zip -d /tmp/
+                          echo "configuration javsalgar/k8s-example-wp-plugin"
+                          sed -i 's/PUT_HERE_DNS_OF_API_SERVER:443/kubernetes.default.svc:443/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                          sed -i 's/PUT_HERE_API_PATH_TO_DEPLOYMENTS/apis\/extensions\/v1beta1\/namespaces\/{{ .Values.namespace }}\/deployments/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                          sed -i 's/PUT_HERE_THE_PATH_TO_THE_SERVICE_ACCOUNT_TOKEN_FILE/\/var\/run\/secrets\/kubernetes.io\/serviceaccount\/token/g' /tmp/k8s-example-wp-plugin-master/k8s_example_plugin.php
+                          mv /tmp/k8s-example-wp-plugin-master /wordpress/wp-content/plugins/k8s-example-wp-plugin
+                          rm -rf  /tmp/k8s-example-wp-plugin-master
+                          echo "Installing plugin javsalgar/k8s-example-wp-plugin"
+                          done=$(( $done + 1 ))
+                          while true; do sleep 1000; done 
+                      else
+                        echo "Wordpress is not ready yet"
+                      fi;
+                      i=$(( $i + 1 ))
+                      sleep $CHECK_INTERVAL;
+                  done;
+                  echo "Wordpress plugins installed";  
+      - name: {{ template "fullname" . }}-logs
+        image: gliderlabs/alpine
+        volumeMounts:
+        - name: wordpress-logs
+          mountPath: /logs
+          subPath: logs
+        command: 
+          - sh
+          - "-c"
+          - |
+            URL_CHECK='http://{{ template "fullname" . }}/wp-login.php';
+            CHECK_INTERVAL='10s';
+            i=0;
+            echo "start logs";
+            while true; do
+              if curl --fail -insecure -XGET -m10 $URL_CHECK &>/dev/null; then
+                echo "ready""
+                tail -f /logs/access_log /logs/error_log
+                while true; do sleep 1000; done # we need this container always running 
+              else
+                echo "not ready"
+                fi;
+                i=$(( $i + 1 ))
+                sleep $CHECK_INTERVAL;
+            done;
+        livenessProbe:
+          httpGet:
+            port: 80
+            path: "/wp-login.php"
+            scheme: HTTP
+          initialDelaySeconds: 100
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            port: 80
+            path: "/wp-login.php"
+            scheme: HTTP
+          initialDelaySeconds: 100
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+          timeoutSeconds: 5
+        volumeMounts:
+        - mountPath: /bitnami/apache
+          name: wordpress-data
+          subPath: apache
+        - mountPath: /bitnami/wordpress
+          name: wordpress-data
+          subPath: wordpress
+        - mountPath: /bitnami/php
+          name: wordpress-data
+          subPath: php
+        - mountPath: /opt/bitnami/apache/logs
+          name: wordpress-logs
+      volumes:
+      - name: wordpress-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ template "fullname" . }}
+      {{- else }}
+        emptyDir: {}
+      {{ end }}
+      - name: wordpress-logs
+        emptyDir: {}
+

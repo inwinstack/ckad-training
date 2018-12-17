@@ -8,7 +8,7 @@ We are going to create a namespace "exercise01" for the exercise and so everythi
 kubectl create ns exercise01
 ```
 
-En este caso los secrets se van a crear por siguientes comandos
+For the creation of the secrets will be done with the following commands:
 
 ```
 kubectl create secret generic mariadb --from-literal=password=root --namespace=exercise01
@@ -42,7 +42,7 @@ In this case we would only add the canary file:
 
 ## Finish
 
-When we finish working with this part just delete this namepsace.
+When we finish working with this part just delete this namespsace.
 
 ```
 kubectl delete ns exercise01

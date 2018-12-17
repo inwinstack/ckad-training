@@ -12,7 +12,7 @@ spec:
     metadata:
       labels:
         app: wordpress
-        tier: frontend
+        type: frontend
         track: canary
     spec:
       containers:

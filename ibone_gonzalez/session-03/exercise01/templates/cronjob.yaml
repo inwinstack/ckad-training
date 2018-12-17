@@ -1,0 +1,53 @@
+# Job mysqldump
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ template "fullname" . }}-mysqldump
+  labels:
+    {{- if .Values.mariadb.enabled }}
+    app: mariadb
+    {{- else }}
+    app: mysql
+    {{- end }}
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
+spec:
+  # period in which the job is executed
+  schedule: "{{ .Values.cronJob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            role: mysqldump
+          containers:
+            - name: mysqldump
+              image: camil/mysqldump
+              env:
+                - name: ALL_DATABASES
+                  value: {{ .Values.cronJob.databases }}
+                - name: DB_HOST
+                  value: {{ template "fullname" . }}
+                - name: DB_USER
+                  {{- if .Values.mariadb.enabled }}
+                  value: {{ .Values.mariadb.db.user | quote }}
+                  {{- else }}
+                  value: {{ .Values.externalDatabase.user | quote }}
+                  {{- end }}
+                - name: DB_PASS
+                  secretKeyRef:
+                  {{- if .Values.mariadb.enabled }}
+                    name: {{ template "mariadb.fullname" . }}
+                    key: mariadb-password
+                  {{- else }}
+                    name: {{ printf "%s-%s" .Release.Name "externaldb" }}
+                    key: db-password
+                  {{- end }}
+              imagePullPolicy: Always
+              volumeMounts:
+                - mountPath: /mysqldump
+                  name: mysqldump
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: /mysqldump
+          restartPolicy: OnFailure

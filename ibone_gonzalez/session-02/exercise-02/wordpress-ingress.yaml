@@ -1,0 +1,25 @@
+# Ingress rule
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress-ingress
+  namespace: exercise02
+  # We use labels here to classify the ingress rule as well
+  labels:
+    app: wordpress
+    type: frontend
+  # non-www to www redirection
+  annotations:
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+spec:
+  rules:
+    - host: myblog.com
+      http:
+        paths:
+          - path: /
+            backend:
+              # Name specified in wordpress-service.yaml
+              serviceName: wordpress-service
+              # The service had two ports, so we need to specify which
+              servicePort: http-port

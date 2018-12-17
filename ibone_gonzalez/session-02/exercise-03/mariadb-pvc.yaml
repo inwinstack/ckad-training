@@ -1,0 +1,17 @@
+# MariaDB Persistent Volume Claim
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pvc
+  namespace: exercise03
+  # We use labels here to classify the service itself as well
+  labels:
+    app: mariadb
+    type: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exercise03-config
+  namespace: exercise03
+data:
+  MARIADB_USER: user_bitnami
+  MARIADB_DATABASE: bitnami_database
+  MARIADB_PORT: "3306"
+  DATABASE_USER: user_bitnami
+  DATABASE_NAME: bitnami_database
+  PASSWORD: exercise03

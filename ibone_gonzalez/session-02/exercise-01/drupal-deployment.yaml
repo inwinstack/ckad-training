@@ -1,0 +1,64 @@
+# Drupal deployment
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: drupal
+  namespace: exercise01
+  labels:
+    app: drupal
+    type: frontend
+spec:
+  # with one replica it is enough
+  replicas: 1
+  # Pod definition
+  template:
+    metadata:
+      # Some basic metadata to be later used with services
+      labels:
+        app: drupal
+        type: frontend
+    spec:
+      containers:
+        # Image information
+        - image: bitnami/drupal:8
+          name: drupal
+          # Environment variable for configuration
+          env:
+            - name: MARIADB_HOST
+              value: mariadb-service
+            - name: MARIADB_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: MARIADB_PORT
+            - name: DRUPAL_DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: DATABASE_USER
+            - name: DRUPAL_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: exercise01-config
+                  key: DATABASE_NAME
+            - name: DRUPAL_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-password
+                  key: password
+          # Port information for later use services
+          ports:
+            - containerPort: 80
+              name: http-port
+            - containerPort: 443
+              name: https-port
+          # Mount the volume in the container
+          volumeMounts:
+            - name: drupal-local-storage
+              mountPath: /bitnami
+      # Volumen
+      volumes:
+        - name: drupal-local-storage
+          persistentVolumeClaim:
+            claimName: drupal-pvc

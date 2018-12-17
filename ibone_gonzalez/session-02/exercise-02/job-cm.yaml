@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysqldump
+  namespace: exercise02
+data:
+  ALL_DATABASES: "true"
