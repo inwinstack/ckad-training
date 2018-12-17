@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}-wp-configmap
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  {{- if .Values.mariadb.enabled }}
+  MARIADB_HOST: {{ template "mariadb.fullname" . }}
+  {{- end }}
+  {{- if .Values.mysql.enabled }}
+  MARIADB_HOST: {{ template "mysql.fullname" . }}
+  {{- end }}
+  wp-blog-name: {{ .Values.wordpressBlogName }}
+  wp-email: {{ .Values.wordpressEmail }}
+  wp-first-name: {{ .Values.wordpressFirstName }}
+  wp-last-name: {{ .Values.wordpressLastName }}

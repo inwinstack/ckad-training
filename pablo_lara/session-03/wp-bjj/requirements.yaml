@@ -1,0 +1,13 @@
+dependencies:
+- name: mariadb
+  version: 5.x.x
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: mariadb.enabled
+  tags:
+    - wordpress-database
+- name: mysql
+  version: 4.x.x
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: mysql.enabled
+  tags:
+    - wordpress-database

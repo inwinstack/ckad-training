@@ -1,0 +1,26 @@
+---
+{{- if .Values.mysqldump.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "fullname" . }}-mysqldump-pvc
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  accessModes:
+    - {{ .Values.mysqldump.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.mysqldump.persistence.size | quote }}
+{{- if .Values.mysqldump.persistence.storageClass }}
+{{- if (eq "-" .Values.mysqldump.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: {{ .Values.mysqldump.persistence.storageClass }}
+{{- end }}
+{{- end }}
+
+{{- end }}

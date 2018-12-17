@@ -1,0 +1,50 @@
+{{- if .Values.mysqldump.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ template "fullname" . }}-mysqldump-cronjob
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  schedule: "*/{{ .Values.mysqldump.everyMinutes }} * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mariadb
+            image: bitnami/mariadb:latest
+            command: ["/bin/bash", "-c", "mysqldump -h$DB_HOST -u$DB_USER -p$DB_PASS $DB_DATABASE > /bitnami/mysqldump/ndb.sql;"]
+            env:
+              - name: DB_DATABASE
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ template "fullname" . }}-wp-secret
+                    key: wp-db-name
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ template "fullname" . }}-wp-cm
+                    key: MARIADB_HOST
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ template "fullname" . }}-wp-secret
+                    key: wp-db-user
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ template "fullname" . }}-wp-secret
+                    key: wp-db-pass
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: {{ template "fullname" . }}-mysqldump-data
+          volumes:
+            - name: {{ template "fullname" . }}-mysqldump-data
+              persistentVolumeClaim:
+                claimName: {{ template "fullname" . }}-mysqldump-pvc
+          restartPolicy: OnFailure
+{{- end }}

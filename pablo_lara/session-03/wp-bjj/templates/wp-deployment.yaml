@@ -1,0 +1,163 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}-wordpress
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
+      release: "{{ .Release.Name }}"
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+        tier: frontend
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end}}
+      {{- end }}
+      containers:
+      - name: {{ template "fullname" . }}-wordpress
+        image: {{ template "wordpress.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        env:
+        - name: MARIADB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-wp-configmap
+              key: MARIADB_HOST
+        - name: MARIADB_PORT_NUMBER
+          value: "3306"
+        - name: WORDPRESS_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-name
+        - name: WORDPRESS_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-user
+        - name: WORDPRESS_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-pass
+        - name: WORDPRESS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-user
+        - name: WORDPRESS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-pass
+        - name: WORDPRESS_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-wp-configmap
+              key: wp-email
+        - name: WORDPRESS_FIRST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-wp-configmap
+              key: wp-first-name
+        - name: WORDPRESS_LAST_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-wp-configmap
+              key: wp-last-name
+        - name: WORDPRESS_BLOG_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}-wp-configmap
+              key: wp-blog-name
+        - name: WORDPRESS_TABLE_PREFIX
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-table-prefix
+        - name: MARIADB_ROOT_USER
+          valueFrom:
+            secretKeyRef: # from secret
+              name: {{ template "fullname" . }}-wp-secret
+              key: mariadb-root-user
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: mariadb-root-password
+        - name: MYSQL_CLIENT_CREATE_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-name
+        - name: MYSQL_CLIENT_CREATE_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-user
+        - name: MYSQL_CLIENT_CREATE_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "fullname" . }}-wp-secret
+              key: wp-db-pass
+        livenessProbe:
+          httpGet:
+            path: /wp-login.php
+          {{- if not .Values.healthcheckHttps }}
+            port: http
+          {{- else }}
+            port: https
+            scheme: HTTPS
+          {{- end }}
+{{ toYaml .Values.livenessProbe | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /wp-login.php
+          {{- if not .Values.healthcheckHttps }}
+            port: http
+          {{- else }}
+            port: https
+            scheme: HTTPS
+          {{- end }}
+{{ toYaml .Values.readinessProbe | indent 10 }}
+        volumeMounts:
+        - mountPath: /bitnami/apache
+          name: wordpress-data
+          subPath: apache
+        - mountPath: /bitnami/wordpress
+          name: wordpress-data
+          subPath: wordpress
+        - mountPath: /bitnami/php
+          name: wordpress-data
+          subPath: php
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+      volumes:
+      - name: wordpress-data
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim | default (include "fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{ end }}
