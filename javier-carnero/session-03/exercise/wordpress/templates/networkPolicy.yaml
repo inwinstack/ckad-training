@@ -1,0 +1,33 @@
+{{- if and (or .Values.mariadb.enabled .Values.mysql.enabled) .Values.networkPolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: "{{- printf "%s-%s" "netpolicy" $.Release.Name | trunc 63 | trimSuffix "-" -}}"
+  labels:
+  {{- if .Values.mariadb.enabled }}
+    app: "{{ template "mariadb.name" . }}"
+  {{- else }}
+    app: "{{ template "mysql.name" . }}"
+  {{- end }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  podSelector:
+    matchLabels:
+    {{- if .Values.mariadb.enabled }}
+      app: "{{ template "mariadb.name" . }}"
+    {{- else }}
+      app: "{{ template "mysql.name" . }}"
+    {{- end }}
+      release: "{{ .Release.Name }}"
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: {{ template "fullname" . }}
+          release: "{{ .Release.Name }}"
+    ports:
+    - protocol: TCP
+      port: 3306
+{{- end }}

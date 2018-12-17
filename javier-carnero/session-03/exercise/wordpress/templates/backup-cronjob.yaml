@@ -1,0 +1,94 @@
+{{- if and (or .Values.mariadb.enabled .Values.mysql.enabled) .Values.backup.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ printf "%s-%s" (include "fullname" .) "backup" }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  schedule: "{{ .Values.backup.period }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ template "fullname" . }}
+            chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+            release: "{{ .Release.Name }}"
+            heritage: "{{ .Release.Service }}"
+        spec:
+        {{- if .Values.mariadb.enabled }}
+        {{- if .Values.mariadb.securityContext.enabled }}
+          securityContext:
+            fsGroup: {{ .Values.mariadb.securityContext.fsGroup }}
+            runAsUser: {{ .Values.mariadb.securityContext.runAsUser }}
+        {{- end }}
+        {{- else }}
+        {{- if .Values.mysql.securityContext.enabled }}
+          securityContext:
+            fsGroup: {{ .Values.mysql.securityContext.fsGroup }}
+            runAsUser: {{ .Values.mysql.securityContext.runAsUser }}
+        {{- end }}
+        {{- end }}
+          containers:
+          - name: backup
+          {{- if .Values.mariadb.enabled }}
+            image: {{ template "mariadb.image" . }}
+            imagePullPolicy: {{ .Values.mariadb.image.pullPolicy | quote }}
+          {{- else }}
+            image: {{ template "mysql.image" . }}
+            imagePullPolicy: {{ .Values.mysql.image.pullPolicy | quote }}
+          {{- end }}
+            command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              mysqldump -h$BACKUP_HOST -u$BACKUP_USER -p$BACKUP_PASSWORD $BACKUP_DATABASE > /bitnami/data-backup/backup_$(date +%Y%m%d.%H:%M).sql;
+              find /bitnami/data-backup/ -type f -name '*.sql' -mtime +7 -exec rm {} \;
+            volumeMounts:
+            - mountPath: "/bitnami/data-backup"
+              name: database-backup
+            resources:
+{{ toYaml .Values.mariadb.master.resources | indent 14 }}
+            env:
+              - name: BACKUP_HOST
+              {{- if .Values.mariadb.enabled }}
+                value: {{ template "mariadb.fullname" . }}
+              {{- else }}
+                value: {{ template "mysql.fullname" . }}
+              {{- end }}
+              - name: BACKUP_DATABASE
+              {{- if .Values.mariadb.enabled }}
+                value: {{ .Values.mariadb.db.name | quote }}
+              {{- else }}
+                value: {{ .Values.mysql.db.name | quote }}
+              {{- end }}
+              - name: BACKUP_USER
+              {{- if .Values.mariadb.enabled }}
+                value: {{ .Values.mariadb.db.user | quote }}
+              {{- else }}
+                value: {{ .Values.mysql.db.user | quote }}
+              {{- end }}
+              - name: BACKUP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                  {{- if .Values.mariadb.enabled }}
+                    name: {{ template "mariadb.fullname" . }}
+                    key: mariadb-password
+                  {{- else }}
+                    name: {{ template "mysql.fullname" . }}
+                    key: mysql-password
+                  {{- end }}
+          restartPolicy: Never
+          volumes:
+          - name: database-backup
+          {{- if .Values.backup.persistence.enabled }}
+            persistentVolumeClaim:
+              claimName: {{ .Values.backup.persistence.existingClaim | default ( printf "%s-%s" (include "fullname" .) "backup") }}
+          {{- else }}
+            emptyDir: {}
+          {{ end }}
+{{- end -}}
