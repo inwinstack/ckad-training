@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: myblog.com
+        backend:
+          serviceName: wp
+          servicePort: 80
+      - path: drupal.myblog.com/drupal
+        backend:
+          serviceName: drupal
+          servicePort: 80          
